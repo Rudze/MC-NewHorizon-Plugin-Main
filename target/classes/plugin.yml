@@ -1,0 +1,27 @@
+name: NewHorizon
+version: '1.0-SNAPSHOT'
+main: fr.rudy.newhorizon.Main
+api-version: '1.21'
+prefix: NewHorizon
+author: Rudy
+
+depend: [LuckPerms]
+softdepend: ["PlaceholderAPI"]
+
+commands:
+  level:
+    description: Affiche votre niveau, votre expérience ou réinitialise les stats d'un joueur.
+    usage: /level [reset <exp|lvl> <player>]
+
+  tpa:
+    description: Demande de téléportation.
+  tpaccept:
+    description: Accepter une demande de téléportation.
+  tpdeny:
+    description: Refuser une demande de téléportation.
+  tptoggle:
+    description: Active ou désactive les demandes de téléportation.
+    usage: /tptoggle
+
+  event:
+    usage: /event

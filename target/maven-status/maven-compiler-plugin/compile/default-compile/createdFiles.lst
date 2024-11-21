@@ -1,0 +1,6 @@
+fr\rudy\newhorizon\Main.class
+fr\rudy\newhorizon\config\ConfigManager.class
+fr\rudy\newhorizon\teleport\TPRequest.class
+fr\rudy\newhorizon\teleport\TPModule.class
+fr\rudy\newhorizon\utils\DatabaseManager.class
+fr\rudy\newhorizon\chat\Chat.class

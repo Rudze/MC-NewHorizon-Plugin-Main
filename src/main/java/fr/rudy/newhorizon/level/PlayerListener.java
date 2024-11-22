@@ -159,7 +159,7 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
+                /*MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
@@ -195,7 +195,7 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
+                /*player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
@@ -232,8 +232,8 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                player.sendMessage("§eVous avez gagné " + expToAdd + " d'expérience pour avoir pêché un poisson !");
-                player.sendMessage("§eIl vous reste " + (expToNextLevel - currentExp) + " d'expérience pour atteindre le niveau suivant.");
+                /*player.sendMessage("§eVous avez gagné " + expToAdd + " d'expérience pour avoir pêché un poisson !");*/
+                /*player.sendMessage("§eIl vous reste " + (expToNextLevel - currentExp) + " d'expérience pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données

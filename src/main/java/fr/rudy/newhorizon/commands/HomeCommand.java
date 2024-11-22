@@ -35,7 +35,7 @@ public class HomeCommand implements CommandExecutor {
             // Définir le home
             Location location = player.getLocation();
             databaseManager.saveHome(playerUuid, location);
-            MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "§aVotre home a été défini avec succès !");
+            MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "Votre home a été défini avec succès !");
             return true;
         }
 
@@ -43,18 +43,18 @@ public class HomeCommand implements CommandExecutor {
             // Téléporter au home
             Location home = databaseManager.getHome(playerUuid);
             if (home == null) {
-                MessageUtil.sendMessage(player, plugin.getPrefixError(), "§cVous n'avez pas encore défini de home. Utilisez /sethome pour en définir un.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "Vous n'avez pas encore défini de home. Utilisez /sethome pour en définir un.");
                 return true;
             }
 
             // Vérifier si le monde est valide
             if (home.getWorld() == null) {
-                MessageUtil.sendMessage(player, plugin.getPrefixError(), "§cLe monde de votre home est introuvable ou non chargé.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "Le monde de votre home est introuvable ou non chargé.");
                 return true;
             }
 
             player.teleport(home);
-            MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "§aTéléporté à votre home !");
+            MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "Téléporté à votre home !");
             return true;
         }
 

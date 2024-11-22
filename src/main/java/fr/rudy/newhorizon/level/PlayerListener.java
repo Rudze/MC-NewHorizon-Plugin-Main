@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -201,5 +202,44 @@ public class PlayerListener implements Listener {
             databaseManager.savePlayerData(playerLevels, playerExp);
         }
     }
+
+    @EventHandler
+    public void onPlayerFish(PlayerFishEvent event) {
+        // Vérifiez si le joueur a effectivement pêché un poisson
+        if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
+            Player player = event.getPlayer();
+            UUID uuid = player.getUniqueId();
+
+            // Gagner de l'expérience pour avoir pêché un poisson
+            int currentLevel = playerLevels.getOrDefault(uuid, 1);
+            int currentExp = playerExp.getOrDefault(uuid, 0);
+            int expToAdd = Main.getInstance().getConfig().getInt("leveling.fishing_exp", 10);
+            // Quantité d'XP ajoutée pour la pêche
+
+            currentExp += expToAdd;
+            playerExp.put(uuid, currentExp);
+
+            int expToNextLevel = levelRequirements.getOrDefault(currentLevel, Integer.MAX_VALUE);
+
+            // Vérifier si le joueur atteint le niveau suivant
+            if (currentExp >= expToNextLevel) {
+                playerLevels.put(uuid, currentLevel + 1);
+                playerExp.put(uuid, 0); // Réinitialiser l'expérience
+                int newLevel = currentLevel + 1;
+
+                player.sendMessage("§aFélicitations ! Vous avez atteint le niveau " + newLevel + " !");
+                String command = "lp user " + player.getName() + " permission set level." + newLevel + " true";
+                Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+
+            } else {
+                player.sendMessage("§eVous avez gagné " + expToAdd + " d'expérience pour avoir pêché un poisson !");
+                player.sendMessage("§eIl vous reste " + (expToNextLevel - currentExp) + " d'expérience pour atteindre le niveau suivant.");
+            }
+
+            // Sauvegarder automatiquement les données
+            databaseManager.savePlayerData(playerLevels, playerExp);
+        }
+    }
+
 }
 

@@ -1,7 +1,7 @@
 general:
     prefix: "&bNewHorizon: "
-    prefixError: "&f "
-    prefixInfo: "&f "
+    prefixError: "&f&c "
+    prefixInfo: "&f&b "
 
 database:
   host: "localhost"

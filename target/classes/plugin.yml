@@ -24,4 +24,10 @@ commands:
     usage: /tptoggle
 
   event:
+    description: Exécuter des events.
     usage: /event
+
+  sethome:
+    description: Définit ton home.
+  home:
+    description: Te téléporte à ton home.

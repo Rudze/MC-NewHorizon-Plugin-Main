@@ -2,6 +2,7 @@ package fr.rudy.newhorizon.level;
 
 import fr.rudy.newhorizon.Main;
 import fr.rudy.newhorizon.utils.DatabaseManager;
+import fr.rudy.newhorizon.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +36,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+
+        Main plugin = Main.getInstance();
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
@@ -44,11 +48,11 @@ public class PlayerListener implements Listener {
         World playerWorld = player.getWorld();
 
         // Debug : Afficher le monde actuel du joueur
-        player.sendMessage("§e[Debug] Vous êtes actuellement dans le monde : " + playerWorld.getName());
+        /*player.sendMessage("§e[Debug] Vous êtes actuellement dans le monde : " + playerWorld.getName());*/
 
         // Vérification du monde
         if (newhorizonWorld == null || playerWorld.equals(newhorizonWorld)) {
-            player.sendMessage("§c[Debug] Vous n'êtes pas dans le monde 'world_resource', aucun XP n'a été gagné.");
+            /*player.sendMessage("§c[Debug] Vous n'êtes pas dans le monde 'world_resource', aucun XP n'a été gagné.");*/
             return; // Sortir si le joueur n'est pas dans le bon monde
         }
 
@@ -148,14 +152,14 @@ public class PlayerListener implements Listener {
                 playerExp.put(uuid, 0); // Réinitialiser l'expérience
 
                 int newLevel = currentLevel + 1;
-                player.sendMessage("§aFélicitations ! Vous avez atteint le niveau " + newLevel + " !");
+                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Félicitations ! Vous avez atteint le niveau " + newLevel + " !");
 
                 // Exécuter la commande LuckPerms
                 String command = "lp user " + player.getName() + " permission set level." + newLevel + " true";
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
+                /*MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
@@ -191,12 +195,51 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
+                /*player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
             databaseManager.savePlayerData(playerLevels, playerExp);
         }
     }
+
+    @EventHandler
+    public void onPlayerFish(PlayerFishEvent event) {
+        // Vérifiez si le joueur a effectivement pêché un poisson
+        if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
+            Player player = event.getPlayer();
+            UUID uuid = player.getUniqueId();
+
+            // Gagner de l'expérience pour avoir pêché un poisson
+            int currentLevel = playerLevels.getOrDefault(uuid, 1);
+            int currentExp = playerExp.getOrDefault(uuid, 0);
+            int expToAdd = Main.getInstance().getConfig().getInt("leveling.fishing_exp", 10);
+            // Quantité d'XP ajoutée pour la pêche
+
+            currentExp += expToAdd;
+            playerExp.put(uuid, currentExp);
+
+            int expToNextLevel = levelRequirements.getOrDefault(currentLevel, Integer.MAX_VALUE);
+
+            // Vérifier si le joueur atteint le niveau suivant
+            if (currentExp >= expToNextLevel) {
+                playerLevels.put(uuid, currentLevel + 1);
+                playerExp.put(uuid, 0); // Réinitialiser l'expérience
+                int newLevel = currentLevel + 1;
+
+                player.sendMessage("§aFélicitations ! Vous avez atteint le niveau " + newLevel + " !");
+                String command = "lp user " + player.getName() + " permission set level." + newLevel + " true";
+                Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+
+            } else {
+                /*player.sendMessage("§eVous avez gagné " + expToAdd + " d'expérience pour avoir pêché un poisson !");*/
+                /*player.sendMessage("§eIl vous reste " + (expToNextLevel - currentExp) + " d'expérience pour atteindre le niveau suivant.");*/
+            }
+
+            // Sauvegarder automatiquement les données
+            databaseManager.savePlayerData(playerLevels, playerExp);
+        }
+    }
+
 }
 

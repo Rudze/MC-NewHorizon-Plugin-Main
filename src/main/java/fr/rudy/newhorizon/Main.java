@@ -88,7 +88,7 @@ public final class Main extends JavaPlugin implements Listener {
         // Vérifier si PlaceholderAPI est installé
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new LevelPlaceholder(playerLevels, playerExp).register();
-            getLogger().info("PlaceholderAPI détecté et intégré avec succès !");
+            /*getLogger().info("PlaceholderAPI détecté et intégré avec succès !");*/
         } else {
             getLogger().warning("PlaceholderAPI non détecté. Les placeholders ne fonctionneront pas.");
         }

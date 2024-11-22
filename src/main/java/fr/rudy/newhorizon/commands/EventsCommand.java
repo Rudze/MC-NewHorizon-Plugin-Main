@@ -51,13 +51,13 @@ public class EventsCommand implements CommandExecutor {
 
                         // Spawn du boss Magnus
                         MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("magnus").orElse(null);
-                        Location spawnPoint = new Location(Main.getInstance().getServer().getWorld("world_resource"), 0, 63, 0);
+                        Location spawnPoint = new Location(Main.getInstance().getServer().getWorld("world_newhorizon"), 1621, 66, 403);
                         ActiveMob magnus = mob.spawn(BukkitAdapter.adapt(spawnPoint), 0);
 
                         MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "L'événement Magnus vient de commencer.");
                         MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Rejoignez-le dans l'arène du village§f.");
-                    }, 2 * 20); //30 secondes //30
-                }, 5 * 20); //5 minutes - 30 secondes //270
+                    }, 30 * 20); //30 secondes //30
+                }, 270 * 20); //5 minutes - 30 secondes //270
                 break;
             default:
                 MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "Boss inconnu !");

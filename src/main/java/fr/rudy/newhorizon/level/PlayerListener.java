@@ -2,6 +2,7 @@ package fr.rudy.newhorizon.level;
 
 import fr.rudy.newhorizon.Main;
 import fr.rudy.newhorizon.utils.DatabaseManager;
+import fr.rudy.newhorizon.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -34,6 +35,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+
+        Main plugin = Main.getInstance();
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
@@ -44,11 +47,11 @@ public class PlayerListener implements Listener {
         World playerWorld = player.getWorld();
 
         // Debug : Afficher le monde actuel du joueur
-        player.sendMessage("§e[Debug] Vous êtes actuellement dans le monde : " + playerWorld.getName());
+        /*player.sendMessage("§e[Debug] Vous êtes actuellement dans le monde : " + playerWorld.getName());*/
 
         // Vérification du monde
         if (newhorizonWorld == null || playerWorld.equals(newhorizonWorld)) {
-            player.sendMessage("§c[Debug] Vous n'êtes pas dans le monde 'world_resource', aucun XP n'a été gagné.");
+            /*player.sendMessage("§c[Debug] Vous n'êtes pas dans le monde 'world_resource', aucun XP n'a été gagné.");*/
             return; // Sortir si le joueur n'est pas dans le bon monde
         }
 
@@ -148,14 +151,14 @@ public class PlayerListener implements Listener {
                 playerExp.put(uuid, 0); // Réinitialiser l'expérience
 
                 int newLevel = currentLevel + 1;
-                player.sendMessage("§aFélicitations ! Vous avez atteint le niveau " + newLevel + " !");
+                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Félicitations ! Vous avez atteint le niveau " + newLevel + " !");
 
                 // Exécuter la commande LuckPerms
                 String command = "lp user " + player.getName() + " permission set level." + newLevel + " true";
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
+                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");
             }
 
             // Sauvegarder automatiquement les données

@@ -14,7 +14,7 @@ import org.bukkit.command.CommandSender;
 
 public class EventsCommand implements CommandExecutor {
 
-    Main plugin = Main.getInstance();
+    Main plugin = Main.get();
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -43,15 +43,15 @@ public class EventsCommand implements CommandExecutor {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "rg flag -w world_newhorizon arene pvp deny");
 
                 // Utilisation de l'instance du plugin principal pour le scheduler
-                Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> {
+                Bukkit.getScheduler().runTaskLater(Main.get(), () -> {
                     MessageUtil.broadcastMessage(plugin.getPrefixInfo(),"Début dans §b30s");
 
-                    Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> {
+                    Bukkit.getScheduler().runTaskLater(Main.get(), () -> {
                         MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Le Magnus est apparu !");
 
                         // Spawn du boss Magnus
                         MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("magnus").orElse(null);
-                        Location spawnPoint = new Location(Main.getInstance().getServer().getWorld("world_newhorizon"), 1621, 66, 403);
+                        Location spawnPoint = new Location(Main.get().getServer().getWorld("world_newhorizon"), 1621, 66, 403);
                         ActiveMob magnus = mob.spawn(BukkitAdapter.adapt(spawnPoint), 0);
 
                         MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "L'événement Magnus vient de commencer.");

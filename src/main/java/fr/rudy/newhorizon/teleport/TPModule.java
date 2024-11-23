@@ -18,9 +18,9 @@ public class TPModule {
         UUID targetId = target.getUniqueId();
 
         requests.put(targetId, new TPRequest(sender.getUniqueId(), target.getUniqueId()));
-            MessageUtil.sendMessage(sender, Main.getInstance().getPrefixInfo(), "Demande envoyée à " + target.getName() + ".");
-            MessageUtil.sendMessage(target, Main.getInstance().getPrefixInfo(), sender.getName() + " souhaite se téléporter à vous.");
-            MessageUtil.sendMessage(target, Main.getInstance().getPrefixInfo(), "Utilisez /tpaccept ou /tpdeny pour répondre.");
+            MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Demande envoyée à " + target.getName() + ".");
+            MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), sender.getName() + " souhaite se téléporter à vous.");
+            MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), "Utilisez /tpaccept ou /tpdeny pour répondre.");
     }
 
     public boolean acceptRequest(Player target) {
@@ -28,7 +28,7 @@ public class TPModule {
 
         if (!requests.containsKey(targetId)) {
             // Utiliser MessageUtil pour envoyer le message
-            MessageUtil.sendMessage(target, Main.getInstance().getPrefixError(), "Aucune demande de téléportation trouvée.");
+            MessageUtil.sendMessage(target, Main.get().getPrefixError(), "Aucune demande de téléportation trouvée.");
             return false;
         }
 
@@ -36,14 +36,14 @@ public class TPModule {
         Player sender = target.getServer().getPlayer(request.getSenderId());
         if (sender == null) {
             // Utiliser MessageUtil pour envoyer le message
-            MessageUtil.sendMessage(target, Main.getInstance().getPrefixError(), "Le joueur qui a envoyé la demande n'est plus connecté.");
+            MessageUtil.sendMessage(target, Main.get().getPrefixError(), "Le joueur qui a envoyé la demande n'est plus connecté.");
             return false;
         }
 
         sender.teleport(target.getLocation());
         // Messages utilisant MessageUtil
-        MessageUtil.sendMessage(sender, Main.getInstance().getPrefixInfo(), "Téléportation réussie !");
-        MessageUtil.sendMessage(target, Main.getInstance().getPrefixInfo(), "Vous avez accepté la demande.");
+        MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Téléportation réussie !");
+        MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), "Vous avez accepté la demande.");
         return true;
     }
 
@@ -52,16 +52,16 @@ public class TPModule {
         UUID targetId = target.getUniqueId();
 
         if (!requests.containsKey(targetId)) {
-            MessageUtil.sendMessage(target, Main.getInstance().getPrefixError(), "Aucune demande de téléportation trouvée.");
+            MessageUtil.sendMessage(target, Main.get().getPrefixError(), "Aucune demande de téléportation trouvée.");
             return false;
         }
 
         TPRequest request = requests.remove(targetId);
         Player sender = target.getServer().getPlayer(request.getSenderId());
         if (sender != null) {
-            MessageUtil.sendMessage(sender, Main.getInstance().getPrefixError(), "Votre demande de téléportation a été refusée.");
+            MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Votre demande de téléportation a été refusée.");
         }
-        MessageUtil.sendMessage(target, Main.getInstance().getPrefixError(), "Demande refusée.");
+        MessageUtil.sendMessage(target, Main.get().getPrefixError(), "Demande refusée.");
         return true;
     }
 
@@ -71,7 +71,7 @@ public class TPModule {
         toggleState.put(playerId, !currentState);
 
         // Utiliser MessageUtil pour envoyer le message avec le préfixe
-        MessageUtil.sendMessage(player, Main.getInstance().getPrefixInfo(),
+        MessageUtil.sendMessage(player, Main.get().getPrefixInfo(),
                 "§eDemandes de téléportation " + (currentState ? "désactivées" : "activées") + ".");
     }
 

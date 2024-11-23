@@ -10,11 +10,16 @@ database:
   password: "password"
   database: "newhorizon"
 
-leveling:
-  initial_exp: 100              # Expérience pour passer du niveau 1 au 2
-  exp_increment_percent: 30     # Pourcentage d'augmentation par niveau
-  max_level: 100                # Niveau maximal atteignable
+levels:
+  initialExp: 100              # Expérience pour passer du niveau 1 au 2
+  expIncrementPercent: 30     # Pourcentage d'augmentation par niveau
   fishing_exp: 8                # Exp gagné avec la pêche
+  break_blocks:
+    - "*_LOG": 1
+    - "COAL_ORE": 1
+    - "WHEAT": 1
+      age: 7
+      test: 98
 
 chat-format: "{prefix}{name}&r: {message}"
 group-formats:

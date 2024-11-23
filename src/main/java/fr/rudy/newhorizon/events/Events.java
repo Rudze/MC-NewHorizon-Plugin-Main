@@ -2,23 +2,19 @@ package fr.rudy.newhorizon.events;
 
 import fr.rudy.newhorizon.Main;
 import fr.rudy.newhorizon.utils.MessageUtil;
-import io.lumine.mythic.bukkit.events.MythicDamageEvent;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
-import io.lumine.mythic.bukkit.events.MythicPlayerAttackEvent;
-import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.*;
 
 public class Events implements Listener {
 
-    Main plugin = Main.getInstance();
+    Main plugin = Main.get();
     private final HashMap<Player, Double> participants = new HashMap<>();
 
     @EventHandler

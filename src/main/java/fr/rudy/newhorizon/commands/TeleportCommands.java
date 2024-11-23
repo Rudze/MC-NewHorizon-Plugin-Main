@@ -17,7 +17,7 @@ public class TeleportCommands implements CommandExecutor {
         this.tpModule = tpModule;
     }
 
-    Main plugin = Main.getInstance();
+    Main plugin = Main.get();
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

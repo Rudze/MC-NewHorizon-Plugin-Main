@@ -1,8 +1,8 @@
 package fr.rudy.newhorizon.utils;
 
-import fr.rudy.newhorizon.Main;
-import fr.rudy.newhorizon.home.Home;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -99,7 +99,40 @@ public class DatabaseManager {
         }
     }
 
+    public void loadHomes(HashMap<UUID, Location> playerHomes) {
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT uuid, home_world, home_x, home_y, home_z, home_yaw, home_pitch FROM newhorizon_player_data");
+            while (resultSet.next()) {
+                UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+                String worldName = resultSet.getString("home_world");
+                double x = resultSet.getDouble("home_x");
+                double y = resultSet.getDouble("home_y");
+                double z = resultSet.getDouble("home_z");
+                float yaw = resultSet.getFloat("home_yaw");
+                float pitch = resultSet.getFloat("home_pitch");
+
+                World world = Bukkit.getWorld(worldName);
+                if (world != null) {
+                    playerHomes.put(uuid, new Location(world, x, y, z, yaw, pitch));
+                } else {
+                    Bukkit.getLogger().warning("[DatabaseManager] Monde introuvable pour le joueur " + uuid + ". Home ignoré.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void saveHome(UUID playerUuid, Location location) {
+        if (location == null || location.getWorld() == null) {
+            getLogger().warning("[DatabaseManager] Impossible de sauvegarder le home : localisation ou monde invalide pour le joueur " + playerUuid);
+            return;
+        }
+
+        // Ajouter un log pour déboguer la sauvegarde
+        getLogger().info("[DatabaseManager] Sauvegarde du home : " + location + " pour le joueur " + playerUuid);
+
         try (PreparedStatement statement = connection.prepareStatement(
                 "INSERT INTO newhorizon_player_data (uuid, home_world, home_x, home_y, home_z, home_yaw, home_pitch) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?) " +
@@ -120,9 +153,11 @@ public class DatabaseManager {
             statement.setFloat(7, location.getPitch());
             statement.executeUpdate();
         } catch (SQLException e) {
+            getLogger().severe("[DatabaseManager] Erreur lors de la sauvegarde du home pour le joueur " + playerUuid);
             e.printStackTrace();
         }
     }
+
 
 
     public Location getHome(UUID playerUuid) {
@@ -140,22 +175,19 @@ public class DatabaseManager {
                 float yaw = resultSet.getFloat("home_yaw");
                 float pitch = resultSet.getFloat("home_pitch");
 
-                // Debug : afficher les valeurs récupérées
-                System.out.println("[Debug] Home récupéré : " + worldName + " (" + x + ", " + y + ", " + z + ")");
+                World world = Bukkit.getWorld(worldName);
+                if (world == null) {
+                    getLogger().warning("[DatabaseManager] Le monde '" + worldName + "' n'est pas chargé pour le joueur " + playerUuid);
+                    return null;
+                }
 
-                return new Location(
-                        Main.getInstance().getServer().getWorld(worldName),
-                        x, y, z, yaw, pitch
-                );
+                return new Location(world, x, y, z, yaw, pitch);
             } else {
-                System.out.println("[Debug] Aucun home trouvé pour le joueur " + playerUuid);
+                getLogger().info("[DatabaseManager] Aucun home trouvé pour le joueur " + playerUuid);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
-
-
-
 }

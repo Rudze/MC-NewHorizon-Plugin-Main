@@ -1,5 +1,6 @@
 package fr.rudy.newhorizon.placeholders;
 
+import fr.rudy.newhorizon.Main;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 
@@ -7,15 +8,6 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class LevelPlaceholder extends PlaceholderExpansion {
-
-    private final HashMap<UUID, Integer> playerLevels;
-    private final HashMap<UUID, Integer> playerExp;
-
-    public LevelPlaceholder(HashMap<UUID, Integer> playerLevels, HashMap<UUID, Integer> playerExp) {
-        this.playerLevels = playerLevels;
-        this.playerExp = playerExp;
-    }
-
     @Override
     public String getIdentifier() {
         return "newhorizon";
@@ -51,12 +43,12 @@ public class LevelPlaceholder extends PlaceholderExpansion {
 
         // Placeholder pour le niveau du joueur
         if (identifier.equalsIgnoreCase("level")) {
-            return String.valueOf(playerLevels.getOrDefault(uuid, 1));
+            return String.valueOf(Main.get().getLevelsManager().getLevel(uuid));
         }
 
         // Placeholder pour l'expérience du joueur
         if (identifier.equalsIgnoreCase("exp")) {
-            return String.valueOf(playerExp.getOrDefault(uuid, 0));
+            return String.valueOf(Main.get().getLevelsManager().getExp(uuid));
         }
 
         return null; // Retourne null si le placeholder n'est pas reconnu

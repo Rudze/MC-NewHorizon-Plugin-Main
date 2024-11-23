@@ -1,58 +1,62 @@
 package fr.rudy.newhorizon.level;
 
 import fr.rudy.newhorizon.Main;
-import fr.rudy.newhorizon.utils.DatabaseManager;
-import fr.rudy.newhorizon.utils.MessageUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Player;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class PlayerListener implements Listener {
+    private final LevelsManager levelsManager;
+    private final List<HashMap<String, Integer>> breakBlocks;
 
-    private final HashMap<UUID, Integer> playerLevels;
-    private final HashMap<UUID, Integer> playerExp;
-    private final DatabaseManager databaseManager;
-    private final Map<Integer, Integer> levelRequirements;
-    private final String RESOURCE_WORLD_NAME = "world_resource";
-
-    public PlayerListener(HashMap<UUID, Integer> playerLevels, HashMap<UUID, Integer> playerExp, DatabaseManager databaseManager, Map<Integer, Integer> levelRequirements) {
-        this.playerLevels = playerLevels;
-        this.playerExp = playerExp;
-        this.databaseManager = databaseManager;
-        this.levelRequirements = levelRequirements;
+    public PlayerListener() {
+        levelsManager = Main.get().getLevelsManager();
+        breakBlocks = (List<HashMap<String, Integer>>) Main.get().getConfig().getList("levels.break_blocks", new ArrayList<>());
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+        //if(event.getPlayer().getWorld().equals(Main.get().getServer().getWorld("world_newhorizon"))) return;
 
-        Main plugin = Main.getInstance();
+        blocksLoop:
+        for (HashMap<String, Integer> block : breakBlocks) {
+            final Set<String> keys = new HashSet<>(block.keySet());
+            if (keys.stream().findFirst().isEmpty()) continue;
+
+            final String name = keys.stream().findFirst().get();
+            if (!Pattern.compile(name.replace("*", ".*").toLowerCase())
+                    .matcher(event.getBlock().getType().toString().toLowerCase())
+                    .matches()
+            ) continue;
+            keys.remove(name);
+
+            for (String metadata : keys)
+                if (!event.getBlock().getBlockData().getAsString().toLowerCase().contains((metadata + "=" + block.get(metadata)).toLowerCase()))
+                    continue blocksLoop;
+            levelsManager.setExp(event.getPlayer().getUniqueId(), levelsManager.getExp(event.getPlayer().getUniqueId()) + block.get(name));
+        }
+
+
+        /*Main plugin = Main.get();
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
         // Récupérer l'instance du monde "world_resource"
-        World newhorizonWorld = Main.getInstance().getServer().getWorld("world_newhorizon");
+        World newhorizonWorld = Main.get().getServer().getWorld("world_newhorizon");
 
         // Vérifier si le joueur est dans le monde "world_resource"
         World playerWorld = player.getWorld();
 
         // Debug : Afficher le monde actuel du joueur
-        /*player.sendMessage("§e[Debug] Vous êtes actuellement dans le monde : " + playerWorld.getName());*/
 
         // Vérification du monde
         if (newhorizonWorld == null || playerWorld.equals(newhorizonWorld)) {
-            /*player.sendMessage("§c[Debug] Vous n'êtes pas dans le monde 'world_resource', aucun XP n'a été gagné.");*/
             return; // Sortir si le joueur n'est pas dans le bon monde
         }
 
@@ -159,17 +163,17 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                /*MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
+
             databaseManager.savePlayerData(playerLevels, playerExp);
-        }
+        }*/
     }
 
     @EventHandler
     public void onAnimalBreed(EntityBreedEvent event) {
-        // Vérifier si le parent est un joueur et un animal
+        /*// Vérifier si le parent est un joueur et un animal
         if (event.getBreeder() instanceof Player && event.getEntity() instanceof Animals) {
             Player player = (Player) event.getBreeder();
             UUID uuid = player.getUniqueId();
@@ -195,17 +199,16 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                /*player.sendMessage("§eVous avez " + currentExp + " d'expérience. Il vous reste " + (expToNextLevel - currentExp) + " pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
             databaseManager.savePlayerData(playerLevels, playerExp);
-        }
+        }*/
     }
 
     @EventHandler
     public void onPlayerFish(PlayerFishEvent event) {
-        // Vérifiez si le joueur a effectivement pêché un poisson
+        /*// Vérifiez si le joueur a effectivement pêché un poisson
         if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH) {
             Player player = event.getPlayer();
             UUID uuid = player.getUniqueId();
@@ -213,7 +216,7 @@ public class PlayerListener implements Listener {
             // Gagner de l'expérience pour avoir pêché un poisson
             int currentLevel = playerLevels.getOrDefault(uuid, 1);
             int currentExp = playerExp.getOrDefault(uuid, 0);
-            int expToAdd = Main.getInstance().getConfig().getInt("leveling.fishing_exp", 10);
+            int expToAdd = Main.get().getConfig().getInt("leveling.fishing_exp", 10);
             // Quantité d'XP ajoutée pour la pêche
 
             currentExp += expToAdd;
@@ -232,14 +235,11 @@ public class PlayerListener implements Listener {
                 Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 
             } else {
-                /*player.sendMessage("§eVous avez gagné " + expToAdd + " d'expérience pour avoir pêché un poisson !");*/
-                /*player.sendMessage("§eIl vous reste " + (expToNextLevel - currentExp) + " d'expérience pour atteindre le niveau suivant.");*/
             }
 
             // Sauvegarder automatiquement les données
             databaseManager.savePlayerData(playerLevels, playerExp);
-        }
+        }*/
     }
-
 }
 

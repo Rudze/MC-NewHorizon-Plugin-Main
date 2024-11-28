@@ -51,7 +51,7 @@ public class EventsCommand implements CommandExecutor {
 
                         // Spawn du boss Magnus
                         MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("magnus").orElse(null);
-                        Location spawnPoint = new Location(Main.get().getServer().getWorld("world_newhorizon"), 1621, 66, 403);
+                        Location spawnPoint = new Location(Main.get().getServer().getWorld("world_newhorizon"), 1633, 36, 402);
                         ActiveMob magnus = mob.spawn(BukkitAdapter.adapt(spawnPoint), 0);
 
                         MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "L'événement Magnus vient de commencer.");

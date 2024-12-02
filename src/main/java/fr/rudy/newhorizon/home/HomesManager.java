@@ -9,24 +9,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
 public class HomesManager {
     private final Connection database;
-    private final HashMap<UUID, Location> cache = new HashMap<>();
 
     public HomesManager() {
         database = Main.get().getDatabase();
     }
 
     public Location getHome(UUID player) {
-        if (cache.containsKey(player)) return cache.get(player);
-
         try (PreparedStatement statement = database.prepareStatement(
-                "SELECT uuid, home_world, home_x, home_y, home_z, home_yax, home_pitch " +
+                "SELECT uuid, home_world, home_x, home_y, home_z, home_yaw, home_pitch " +
                         "FROM newhorizon_player_data " +
                         "WHERE uuid = ?;"
         )) {
@@ -43,7 +38,6 @@ public class HomesManager {
                         resultSet.getFloat("home_yaw"),
                         resultSet.getFloat("home_pitch")
                 );
-                cache.put(player, homeLocation);
                 return homeLocation;
             }
         } catch (SQLException exception) {
@@ -58,13 +52,13 @@ public class HomesManager {
         try (PreparedStatement statement = database.prepareStatement(
                 "INSERT INTO newhorizon_player_data (uuid, home_world, home_x, home_y, home_z, home_yaw, home_pitch) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                        "ON DUPLICATE KEY UPDATE " +
-                        "home_world = VALUES(home_world), " +
-                        "home_x = VALUES(home_x), " +
-                        "home_y = VALUES(home_y), " +
-                        "home_z = VALUES(home_z), " +
-                        "home_yaw = VALUES(home_yaw), " +
-                        "home_pitch = VALUES(home_pitch);"
+                        "ON CONFLICT(uuid) DO UPDATE SET " +
+                        "home_world = excluded.home_world, " +
+                        "home_x = excluded.home_x, " +
+                        "home_y = excluded.home_y, " +
+                        "home_z = excluded.home_z, " +
+                        "home_yaw = excluded.home_yaw, " +
+                        "home_pitch = excluded.home_pitch;"
         )) {
             statement.setString(1, player.toString());
             statement.setString(2, Objects.requireNonNull(home.getWorld()).getName());
@@ -74,7 +68,6 @@ public class HomesManager {
             statement.setFloat(6, home.getYaw());
             statement.setFloat(7, home.getPitch());
             statement.executeUpdate();
-            cache.merge(player, home, (prev, next) -> next);
         } catch (SQLException exception) {
             //TODO: Message + Stacktrace
             exception.printStackTrace();

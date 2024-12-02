@@ -11,7 +11,6 @@ import java.util.UUID;
 
 public class LevelsManager {
     private final Connection database;
-    private final HashMap<UUID, Integer> cache = new HashMap<>();
 
     private final int initialExp;
     private final int expIncrementPercent;
@@ -24,8 +23,6 @@ public class LevelsManager {
     }
 
     public int getExp(UUID player) {
-        if (cache.containsKey(player)) return cache.get(player);
-
         try (PreparedStatement statement = database.prepareStatement(
                 "SELECT uuid, experience " +
                         "FROM newhorizon_player_data " +
@@ -37,7 +34,6 @@ public class LevelsManager {
                 if (!resultSet.next()) return -1;
 
                 final int exp = resultSet.getInt("experience");
-                cache.put(player, exp);
                 return exp;
             }
         } catch (SQLException exception) {
@@ -52,13 +48,12 @@ public class LevelsManager {
         try (PreparedStatement statement = database.prepareStatement(
                 "INSERT INTO newhorizon_player_data (uuid, experience) " +
                         "VALUES (?, ?) " +
-                        "ON DUPLICATE KEY UPDATE " +
-                        "experience = VALUES(experience);"
+                        "ON CONFLICT(uuid) DO UPDATE SET " +
+                        "experience = excluded.experience;"
         )) {
             statement.setString(1, player.toString());
             statement.setInt(2, exp);
             statement.executeUpdate();
-            cache.merge(player, exp, (prev, next) -> next);
         } catch (SQLException exception) {
             //TODO: Message + Stacktrace
             exception.printStackTrace();

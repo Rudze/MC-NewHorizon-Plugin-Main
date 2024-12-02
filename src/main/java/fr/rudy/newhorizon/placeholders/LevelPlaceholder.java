@@ -35,22 +35,47 @@ public class LevelPlaceholder extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, String identifier) {
-        if (player == null) {
+        if (identifier == null || identifier.isEmpty()) {
             return "";
         }
 
-        UUID uuid = player.getUniqueId();
-
-        // Placeholder pour le niveau du joueur
-        if (identifier.equalsIgnoreCase("level")) {
-            return String.valueOf(Main.get().getLevelsManager().getLevel(uuid));
+        // Identifier des parties du placeholder : exemple "level_<playername>"
+        String[] parts = identifier.split("_");
+        if (parts.length == 0) {
+            return null; // Si aucun identifiant valide, retourne null
         }
 
-        // Placeholder pour l'expérience du joueur
-        if (identifier.equalsIgnoreCase("exp")) {
-            return String.valueOf(Main.get().getLevelsManager().getExp(uuid));
+        String placeholder = parts[0]; // Le type de placeholder, par exemple "level" ou "exp"
+        String targetPlayerName = parts.length > 1 ? parts[1] : null; // Nom du joueur cible si fourni
+
+        UUID targetUuid;
+
+        // Récupération du joueur ciblé
+        if (targetPlayerName != null) {
+            Player targetPlayer = Main.get().getServer().getPlayerExact(targetPlayerName);
+            if (targetPlayer == null) {
+                return "Joueur introuvable"; // Si le joueur n'est pas trouvé
+            }
+            targetUuid = targetPlayer.getUniqueId();
+        } else {
+            // Si aucun joueur cible n'est spécifié, on utilise le joueur actuel
+            if (player == null) {
+                return ""; // Aucun joueur actuel (erreur)
+            }
+            targetUuid = player.getUniqueId();
+        }
+
+        // Placeholder pour le niveau
+        if (placeholder.equalsIgnoreCase("level")) {
+            return String.valueOf(Main.get().getLevelsManager().getLevel(targetUuid));
+        }
+
+        // Placeholder pour l'expérience
+        if (placeholder.equalsIgnoreCase("exp")) {
+            return String.valueOf(Main.get().getLevelsManager().getExp(targetUuid));
         }
 
         return null; // Retourne null si le placeholder n'est pas reconnu
     }
+
 }

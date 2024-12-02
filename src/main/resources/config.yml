@@ -2,18 +2,12 @@ general:
   prefix: "&bNewHorizon: "
   prefixError: "&f&c "
   prefixInfo: "&f&b "
-
-database:
-  host: "localhost"
-  port: 3306
-  username: "root"
-  password: "password"
-  database: "newhorizon"
-
+  
 levels:
   initialExp: 100              # Expérience pour passer du niveau 1 au 2
-  expIncrementPercent: 30     # Pourcentage d'augmentation par niveau
-  fishing_exp: 8                # Exp gagné avec la pêche
+  expIncrementPercent: 30      # Pourcentage d'augmentation par niveau
+  fish_exp: 10                 # Exp gagné avec la pêche
+  breed_exp: 15
   break_blocks:
     - "*_LOG": 1
     #Mineraits
@@ -51,21 +45,40 @@ levels:
     - "MELON": 2
     - "SUGAR_CANE": 1
 
+  # Expérience pour tuer des mobs
+  mob_kill_exp:
+    - "zombie": 20
+    - "skeleton": 15
+    - "creeper": 25
+    - "enderman": 50
+
 warps:
-  spawn:
-    world: "world_resource"
-    x: 0
-    y: 64
-    z: 0
-    yaw: 0
+  newhorizon:
+    world: "world_newhorizon"
+    x: 1633.5
+    y: 67
+    z: 402.5
+    yaw: -180
     pitch: 0
-  shop:
-    world: "world_resource"
-    x: 100
-    y: 70
-    z: -50
+  dungeon_normal_skeleton:
+    world: "world_dungeons"
+    x: 106.5
+    y: -49
+    z: -1.5
     yaw: 90
     pitch: 0
+  pvp:
+    world: "world_newhorizon"
+    x: 1633.5
+    y: 36
+    z: 420.5
+    yaw: 90
+    pitch: 0
+  resource:
+    world: "world_resource"
+    x: 23.5
+    y: 79
+    z: -40.5
 
 
 chat-format: "{prefix}{name}&r: {message}"

@@ -1,10 +1,7 @@
 package fr.rudy.newhorizon;
 
 import fr.rudy.newhorizon.chat.Chat;
-import fr.rudy.newhorizon.commands.EventsCommand;
-import fr.rudy.newhorizon.commands.HomeCommand;
-import fr.rudy.newhorizon.commands.LevelCommand;
-import fr.rudy.newhorizon.commands.TeleportCommands;
+import fr.rudy.newhorizon.commands.*;
 import fr.rudy.newhorizon.config.ConfigManager;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
@@ -13,6 +10,8 @@ import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.LevelPlaceholder;
 import fr.rudy.newhorizon.teleport.TPModule;
 import fr.rudy.newhorizon.utils.LevelCalculator;
+import fr.rudy.newhorizon.warp.WarpManager;
+
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -40,6 +39,7 @@ public final class Main extends JavaPlugin implements Listener {
     private String prefixError;
     private String prefixInfo;
     private TPModule tpModule;
+    private WarpManager warpManager;
 
     @Override
     public void onEnable() {
@@ -95,8 +95,13 @@ public final class Main extends JavaPlugin implements Listener {
             return;
         }
 
+        // Initialiser HomeManager
         homesManager = new HomesManager();
         levelsManager = new LevelsManager();
+
+        // Initialiser WarpManager
+        warpManager = new WarpManager();
+        warpManager.loadWarpsFromConfig();
 
         // Initialiser le gestionnaire de chat
         new Chat(this, luckPerms);
@@ -122,6 +127,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("event").setExecutor(new EventsCommand());
         getCommand("sethome").setExecutor(new HomeCommand());
         getCommand("home").setExecutor(new HomeCommand());
+        getCommand("warp").setExecutor(new WarpCommand(warpManager));
 
         // Charger les préfixes depuis la configuration
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");

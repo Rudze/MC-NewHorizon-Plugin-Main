@@ -31,3 +31,6 @@ commands:
     description: Définit ton home.
   home:
     description: Te téléporte à ton home.
+
+  warp:
+    description: Téléporter un joueur à un warp.

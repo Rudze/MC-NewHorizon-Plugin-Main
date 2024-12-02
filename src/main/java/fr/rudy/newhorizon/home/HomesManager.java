@@ -26,7 +26,7 @@ public class HomesManager {
         if (cache.containsKey(player)) return cache.get(player);
 
         try (PreparedStatement statement = database.prepareStatement(
-                "SELECT uuid, home_world, home_x, home_y, home_z, home_yax, home_pitch " +
+                "SELECT uuid, home_world, home_x, home_y, home_z, home_yaw, home_pitch " +
                         "FROM newhorizon_player_data " +
                         "WHERE uuid = ?;"
         )) {

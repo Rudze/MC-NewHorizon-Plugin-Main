@@ -58,11 +58,13 @@ public final class Main extends JavaPlugin implements Listener {
 
         // Initialisation de la base de données
         try {
-            database = DriverManager.getConnection(
+            /*database = DriverManager.getConnection(
                     "jdbc:mysql://" + getConfig().getString("database.host") + ":" + getConfig().getInt("database.port") + "/" + getConfig().getString("database.database"),
                     getConfig().getString("database.username"),
                     getConfig().getString("database.password")
-            );
+            );*/
+
+            database = DriverManager.getConnection("jdbc:sqlite:database.db");
 
             try (Statement statement = database.createStatement()) {
                 statement.executeUpdate(

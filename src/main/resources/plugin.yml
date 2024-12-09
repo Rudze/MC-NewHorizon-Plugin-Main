@@ -5,7 +5,7 @@ api-version: '1.21'
 prefix: NewHorizon
 author: Rudy
 
-depend: [LuckPerms]
+depend: [LuckPerms, Vault]
 softdepend: ["PlaceholderAPI"]
 
 commands:
@@ -34,3 +34,7 @@ commands:
 
   warp:
     description: Téléporter un joueur à un warp.
+
+  coins:
+    description: Gère l'argent des joueurs.
+    usage: "/coins ou /coins set <joueur> <montant>"

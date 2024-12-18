@@ -33,7 +33,10 @@ commands:
     description: Te téléporte à ton home.
 
   warp:
-    description: Téléporter un joueur à un warp.
+    description: Téléporte un joueur à un warp défini.
+    usage: /warp <nom_du_warp> <nom_du_joueur>
+    permission: newhorizon.warp
+    permission-message: Vous n'avez pas la permission d'utiliser cette commande.
 
   coins:
     description: Gère l'argent des joueurs.

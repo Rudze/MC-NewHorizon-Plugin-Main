@@ -2,7 +2,7 @@ general:
   prefix: "&bNewHorizon: "
   prefixError: "&f&c "
   prefixInfo: "&f&b "
-
+  
 levels:
   initialExp: 100              # Expérience pour passer du niveau 1 au 2
   expIncrementPercent: 30      # Pourcentage d'augmentation par niveau
@@ -79,8 +79,6 @@ warps:
     x: 23.5
     y: 79
     z: -40.5
-    yaw: 90
-    pitch: 0
 
 
 chat-format: "{prefix}{name}&r: {message}"

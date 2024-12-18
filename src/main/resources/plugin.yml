@@ -5,7 +5,7 @@ api-version: '1.21'
 prefix: NewHorizon
 author: Rudy
 
-depend: [LuckPerms]
+depend: [LuckPerms, Vault]
 softdepend: ["PlaceholderAPI"]
 
 commands:
@@ -37,3 +37,7 @@ commands:
     usage: /warp <nom_du_warp> <nom_du_joueur>
     permission: newhorizon.warp
     permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+
+  coins:
+    description: Gère l'argent des joueurs.
+    usage: "/coins ou /coins set <joueur> <montant>"

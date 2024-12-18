@@ -3,6 +3,8 @@ package fr.rudy.newhorizon;
 import fr.rudy.newhorizon.chat.Chat;
 import fr.rudy.newhorizon.commands.*;
 import fr.rudy.newhorizon.config.ConfigManager;
+import fr.rudy.newhorizon.economy.EconomyManager;
+import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
 import fr.rudy.newhorizon.level.LevelsManager;
@@ -13,17 +15,16 @@ import fr.rudy.newhorizon.utils.LevelCalculator;
 import fr.rudy.newhorizon.warp.WarpManager;
 
 import net.luckperms.api.LuckPerms;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class Main extends JavaPlugin implements Listener {
     private static Main instance = null;
@@ -35,6 +36,7 @@ public final class Main extends JavaPlugin implements Listener {
     private Connection database;
     private HomesManager homesManager;
     private LevelsManager levelsManager;
+    private EconomyManager economyManager;
 
     private String prefixError;
     private String prefixInfo;
@@ -48,22 +50,8 @@ public final class Main extends JavaPlugin implements Listener {
         // Initialisation de la configuration
         saveDefaultConfig();
 
-        // Charger les configurations de niveaux
-        //int initialExp = getConfig().getInt("leveling.initial_exp", 100);
-        //double incrementPercent = getConfig().getDouble("leveling.exp_increment_percent", 30);
-        //int maxLevel = getConfig().getInt("leveling.max_level", 100);
-
-        // Calculer les exigences d'expérience
-        //levelRequirements = LevelCalculator.calculateLevelRequirements(initialExp, incrementPercent, maxLevel);
-
         // Initialisation de la base de données
         try {
-            /*database = DriverManager.getConnection(
-                    "jdbc:mysql://" + getConfig().getString("database.host") + ":" + getConfig().getInt("database.port") + "/" + getConfig().getString("database.database"),
-                    getConfig().getString("database.username"),
-                    getConfig().getString("database.password")
-            );*/
-
             database = DriverManager.getConnection("jdbc:sqlite:database.db");
 
             try (Statement statement = database.createStatement()) {
@@ -71,6 +59,7 @@ public final class Main extends JavaPlugin implements Listener {
                         "CREATE TABLE IF NOT EXISTS newhorizon_player_data (" +
                                 "uuid VARCHAR(36) PRIMARY KEY, " +
                                 "experience INT DEFAULT 0, " +
+                                "money INT DEFAULT 0, " +
                                 "home_world VARCHAR(64), " +
                                 "home_x DOUBLE, " +
                                 "home_y DOUBLE, " +
@@ -81,7 +70,6 @@ public final class Main extends JavaPlugin implements Listener {
                 );
             }
         } catch (SQLException exception) {
-            //TODO: Message + Stacktrace
             exception.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -95,11 +83,16 @@ public final class Main extends JavaPlugin implements Listener {
             return;
         }
 
-        // Initialiser HomeManager
+        // Initialiser EconomyManager
+        economyManager = new EconomyManager(database);
+        economyManager.addMoneyColumnIfNotExists();
+
+        // Setup Vault
+        setupVault();
+
+        // Initialiser HomeManager et WarpManager
         homesManager = new HomesManager();
         levelsManager = new LevelsManager();
-
-        // Initialiser WarpManager
         warpManager = new WarpManager();
         warpManager.loadWarpsFromConfig();
 
@@ -109,7 +102,6 @@ public final class Main extends JavaPlugin implements Listener {
         // Vérifier si PlaceholderAPI est installé
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new LevelPlaceholder().register();
-            /*getLogger().info("PlaceholderAPI détecté et intégré avec succès !");*/
         } else {
             getLogger().warning("PlaceholderAPI non détecté. Les placeholders ne fonctionneront pas.");
         }
@@ -129,6 +121,9 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("warp").setExecutor(new WarpCommand(warpManager));
 
+        // Enregistrement de la commande /coins
+        getCommand("coins").setExecutor(new CoinsCommand(economyManager));
+
         // Charger les préfixes depuis la configuration
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
         prefixInfo = getConfig().getString("general.prefixInfo", "&a[Info] ");
@@ -140,11 +135,25 @@ public final class Main extends JavaPlugin implements Listener {
     public void onDisable() {
         // Déconnexion de la base
         try {
-            database.close();
-            //TODO: Message
+            if (database != null && !database.isClosed()) {
+                database.close();
+            }
         } catch (SQLException ignored) {}
 
         getLogger().info("NewHorizon plugin désactivé proprement.");
+    }
+
+    private void setupVault() {
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            getServer().getServicesManager().register(
+                    Economy.class,
+                    new VaultEconomy(economyManager),
+                    this,
+                    ServicePriority.Normal
+            );
+        } else {
+            getLogger().warning("Vault n'est pas installé. L'économie ne fonctionnera pas correctement.");
+        }
     }
 
     public String getPrefixError() {

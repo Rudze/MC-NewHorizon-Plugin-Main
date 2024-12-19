@@ -1,10 +1,7 @@
 package fr.rudy.newhorizon.economy;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.math.BigDecimal;
+import java.sql.*;
 import java.util.UUID;
 
 public class EconomyManager {
@@ -16,7 +13,7 @@ public class EconomyManager {
 
     public void addMoneyColumnIfNotExists() {
         try (Statement statement = database.createStatement()) {
-            statement.executeUpdate("ALTER TABLE newhorizon_player_data ADD COLUMN money INTEGER DEFAULT 0;");
+            statement.executeUpdate("ALTER TABLE newhorizon_player_data ADD COLUMN money DOUBLE DEFAULT 0;");
         } catch (SQLException e) {
             if (!e.getMessage().contains("duplicate column name")) {
                 e.printStackTrace();
@@ -24,30 +21,44 @@ public class EconomyManager {
         }
     }
 
-    public int getMoney(UUID player) {
+    public BigDecimal getMoney(UUID player) {
         try (PreparedStatement statement = database.prepareStatement(
                 "SELECT money FROM newhorizon_player_data WHERE uuid = ?;"
         )) {
             statement.setString(1, player.toString());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getInt("money");
+                return BigDecimal.valueOf(resultSet.getDouble("money"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0;
+        return BigDecimal.ZERO;
     }
 
-    public void setMoney(UUID player, int amount) {
+    public void setMoney(UUID player, BigDecimal amount) {
         try (PreparedStatement statement = database.prepareStatement(
                 "UPDATE newhorizon_player_data SET money = ? WHERE uuid = ?;"
         )) {
-            statement.setInt(1, amount);
+            statement.setDouble(1, amount.doubleValue());
             statement.setString(2, player.toString());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addMoney(UUID player, BigDecimal amount) {
+        BigDecimal currentBalance = getMoney(player);
+        setMoney(player, currentBalance.add(amount));
+    }
+
+    public boolean hasEnough(UUID player, BigDecimal amount) {
+        return getMoney(player).compareTo(amount) >= 0;
+    }
+
+    public void removeMoney(UUID player, BigDecimal amount) {
+        BigDecimal currentBalance = getMoney(player);
+        setMoney(player, currentBalance.subtract(amount));
     }
 }

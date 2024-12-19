@@ -10,6 +10,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class CoinsCommand implements CommandExecutor {
@@ -25,33 +26,41 @@ public class CoinsCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0 && sender instanceof Player) {
             Player player = (Player) sender;
-            int balance = economyManager.getMoney(player.getUniqueId());
-            MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Vous avez " + balance + " pièces.");
+
+            // Obtenez le solde en BigDecimal
+            BigDecimal balance = economyManager.getMoney(player.getUniqueId());
+
+            // Formatez le solde pour avoir deux chiffres après la virgule
+            String formattedBalance = String.format("%.2f", balance.doubleValue());
+
+            // Affichez le solde au joueur
+            sender.sendMessage(ChatColor.GREEN + "Vous avez " + formattedBalance + " pièces.");
             return true;
         } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
             if (!sender.hasPermission("economy.set")) {
-                MessageUtil.broadcastMessage(plugin.getPrefixError(), "Vous n'avez pas la permission.");
+                sender.sendMessage(ChatColor.RED + "Vous n'avez pas la permission.");
                 return true;
             }
 
             Player target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                MessageUtil.broadcastMessage(plugin.getPrefixError(), "Joueur introuvable.");
+                sender.sendMessage(ChatColor.RED + "Joueur introuvable.");
                 return true;
             }
 
             try {
-                int amount = Integer.parseInt(args[2]);
+                BigDecimal amount = new BigDecimal(args[2]);
                 economyManager.setMoney(target.getUniqueId(), amount);
-                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Argent mis à jour pour " + target.getName());
-                MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Votre solde a été mis à jour : " + amount + " pièces.");
+                sender.sendMessage(ChatColor.GREEN + "Argent mis à jour pour " + target.getName() + " : " + String.format("%.2f", amount.doubleValue()) + " pièces.");
             } catch (NumberFormatException e) {
-                MessageUtil.broadcastMessage(plugin.getPrefixError(), "Montant invalide.");
+                sender.sendMessage(ChatColor.RED + "Montant invalide.");
             }
             return true;
         }
 
-        MessageUtil.broadcastMessage(plugin.getPrefixError(), "Utilisation: /coins ou /coins set <joueur> <montant>");
+        sender.sendMessage(ChatColor.RED + "Utilisation: /coins ou /coins set <joueur> <montant>");
         return false;
     }
+
+
 }

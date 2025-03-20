@@ -14,26 +14,33 @@ import java.util.*;
 
 public class Events implements Listener {
 
-    Main plugin = Main.get();
+    private final Main plugin = Main.get();
     private final HashMap<Player, Double> participants = new HashMap<>();
 
-    @EventHandler
-    public void onMagnusDeath(MythicMobDeathEvent event) {
-        // Vérifie si le type du mob est "magnus"
-        if (!event.getMob().getType().getInternalName().equalsIgnoreCase("magnus")) return;
+    // Récompenses par boss
+    private final Map<String, String> bossRewards = new HashMap<>();
 
-        // Annonce et récompenses
-        MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Le Magnus a été vaincu ! Les joueurs participants recevront une récompense.");
+    public Events() {
+        bossRewards.put("magnus", "items.magnus_shard");
+        bossRewards.put("lumberjack", "items.lumberjack_shard");
+    }
+
+    @EventHandler
+    public void onBossDeath(MythicMobDeathEvent event) {
+        String bossName = event.getMob().getType().getInternalName().toLowerCase();
+
+        if (!bossRewards.containsKey(bossName)) return;
+
+        MessageUtil.broadcastMessage(plugin.getPrefixInfo(), "Le boss " + bossName + " a été vaincu ! Les joueurs participants recevront une récompense.");
 
         participants.forEach((player, damage) -> {
-            // Give de la récompense au participants
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "iagive " + player.getName() + " newhorizon:magnus_shard ");
-            // Téléportation des participants au spawn
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "warp newhorizon" + player.getName());
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "customitems " + bossRewards.get(bossName) + " " + player.getName());
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "warp newhorizon " + player.getName());
         });
 
         List<Map.Entry<Player, Double>> sortedEntries = new ArrayList<>(participants.entrySet());
         sortedEntries.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
         Bukkit.broadcastMessage("--------------------------");
         Bukkit.broadcastMessage("Top 3 joueurs :");
         for (int i = 0; i < Math.min(3, sortedEntries.size()); i++) {
@@ -42,21 +49,21 @@ public class Events implements Listener {
         }
         Bukkit.broadcastMessage("--------------------------");
 
-        // Réinitialiser la liste des participants
         participants.clear();
 
-        // Réinitialiser les paramètres de l'arène
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "rg flag -w world_newhorizon arene pvp allow");
     }
 
-
     @EventHandler
     public void onMythicDamage(EntityDamageByEntityEvent event) {
-        // Ajouter les joueurs infligeant des dégâts à Magnus
-
         if (!(event.getDamager() instanceof Player)) return;
-        if (!event.getEntity().getType().equals(EntityType.IRON_GOLEM)) return;
-        if (!event.getEntity().getName().equals("§fMagnus")) return;
+        if (!(event.getEntity().getType().equals(EntityType.IRON_GOLEM))) return;
+
+        String entityName = event.getEntity().getCustomName();
+        if (entityName == null) return;
+
+        String bossName = entityName.replace("§f", "").toLowerCase();
+        if (!bossRewards.containsKey(bossName)) return;
 
         participants.merge((Player) event.getDamager(), event.getDamage(), Double::sum);
     }

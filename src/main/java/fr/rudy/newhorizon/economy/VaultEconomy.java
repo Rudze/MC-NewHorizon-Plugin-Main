@@ -31,12 +31,12 @@ public class VaultEconomy implements Economy {
 
     @Override
     public int fractionalDigits() {
-        return 0; // Pas de support pour les décimales dans ce système.
+        return 2;
     }
 
     @Override
     public String format(double amount) {
-        return (int) amount + " coins"; // Formatage de la monnaie.
+        return String.format("%.2f coins", amount);
     }
 
     @Override
@@ -116,11 +116,11 @@ public class VaultEconomy implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        int currentBalance = economyManager.getMoney(player.getUniqueId());
+        double currentBalance = economyManager.getMoney(player.getUniqueId());
         if (currentBalance < amount) {
             return new EconomyResponse(amount, currentBalance, EconomyResponse.ResponseType.FAILURE, "Not enough money");
         }
-        economyManager.setMoney(player.getUniqueId(), currentBalance - (int) amount);
+        economyManager.setMoney(player.getUniqueId(), currentBalance - amount);
         return new EconomyResponse(amount, currentBalance - amount, EconomyResponse.ResponseType.SUCCESS, null);
     }
 
@@ -141,8 +141,8 @@ public class VaultEconomy implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        int currentBalance = economyManager.getMoney(player.getUniqueId());
-        economyManager.setMoney(player.getUniqueId(), currentBalance + (int) amount);
+        double currentBalance = economyManager.getMoney(player.getUniqueId());
+        economyManager.setMoney(player.getUniqueId(), currentBalance + amount);
         return new EconomyResponse(amount, currentBalance + amount, EconomyResponse.ResponseType.SUCCESS, null);
     }
 

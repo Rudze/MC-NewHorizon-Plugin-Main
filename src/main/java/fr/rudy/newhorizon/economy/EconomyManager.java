@@ -24,26 +24,26 @@ public class EconomyManager {
         }
     }
 
-    public int getMoney(UUID player) {
+    public double getMoney(UUID player) {
         try (PreparedStatement statement = database.prepareStatement(
                 "SELECT money FROM newhorizon_player_data WHERE uuid = ?;"
         )) {
             statement.setString(1, player.toString());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getInt("money");
+                return resultSet.getDouble("money"); // <-- ici
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return 0;
+        return 0.0;
     }
 
-    public void setMoney(UUID player, int amount) {
+    public void setMoney(UUID player, double amount) {
         try (PreparedStatement statement = database.prepareStatement(
                 "UPDATE newhorizon_player_data SET money = ? WHERE uuid = ?;"
         )) {
-            statement.setInt(1, amount);
+            statement.setDouble(1, amount); // <-- ici
             statement.setString(2, player.toString());
             statement.executeUpdate();
         } catch (SQLException e) {

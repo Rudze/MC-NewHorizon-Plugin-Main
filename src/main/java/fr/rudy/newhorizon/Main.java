@@ -59,7 +59,7 @@ public final class Main extends JavaPlugin implements Listener {
                         "CREATE TABLE IF NOT EXISTS newhorizon_player_data (" +
                                 "uuid VARCHAR(36) PRIMARY KEY, " +
                                 "experience INT DEFAULT 0, " +
-                                "money INT DEFAULT 0, " +
+                                "money DOUBLE DEFAULT 0.0, " +
                                 "home_world VARCHAR(64), " +
                                 "home_x DOUBLE, " +
                                 "home_y DOUBLE, " +

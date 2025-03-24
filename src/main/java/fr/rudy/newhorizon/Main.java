@@ -11,6 +11,7 @@ import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.LevelPlaceholder;
 import fr.rudy.newhorizon.teleport.TPModule;
+import fr.rudy.newhorizon.ui.MenuItemManager;
 import fr.rudy.newhorizon.utils.LevelCalculator;
 import fr.rudy.newhorizon.warp.WarpManager;
 
@@ -109,6 +110,8 @@ public final class Main extends JavaPlugin implements Listener {
         // Enregistrer les événements et les commandes
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
+        getServer().getPluginManager().registerEvents(new MenuItemManager(this), this);
+
         tpModule = new TPModule();
 
         getCommand("level").setExecutor(new LevelCommand());

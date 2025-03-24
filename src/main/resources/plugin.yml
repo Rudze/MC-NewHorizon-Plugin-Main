@@ -1,5 +1,5 @@
 name: NewHorizon
-version: 'v1.8'
+version: 'v1.9'
 main: fr.rudy.newhorizon.Main
 api-version: '1.21'
 prefix: NewHorizon

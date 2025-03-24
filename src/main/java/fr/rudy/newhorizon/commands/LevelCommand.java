@@ -9,7 +9,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 public class LevelCommand implements CommandExecutor {
@@ -19,7 +18,6 @@ public class LevelCommand implements CommandExecutor {
         levelsManager = Main.get().getLevelsManager();
     }
 
-
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
@@ -27,46 +25,68 @@ public class LevelCommand implements CommandExecutor {
             return true;
         }
 
-        // Si aucune sous-commande n'est spécifiée, afficher les informations du joueur
+        // /level
         if (args.length == 0) {
             final UUID player = ((Player) sender).getUniqueId();
             MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Votre niveau : " + levelsManager.getLevel(player));
             MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Votre expérience actuelle : " + levelsManager.getExp(player));
-            MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Expérience prochain level : " + levelsManager.expToNextLevel(player));
+            MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Expérience prochain niveau : " + levelsManager.expToNextLevel(player));
             return true;
         }
 
-        // Gérer la sous-commande set
+        // /level set <exp> <joueur>
         if (args.length > 1 && args[0].equalsIgnoreCase("set")) {
-            // Vérifier les permissions
-            if (!sender.isOp()) {
+            if (!sender.hasPermission("newhorizon.level.admin")) {
                 MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Vous n'avez pas la permission d'utiliser cette commande.");
                 return true;
             }
 
-            final Player player = Bukkit.getPlayer(args.length > 2 ? args[2] : sender.getName());
-            if (player == null) {
-                //TODO: Message
-                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "");
-
+            final Player target = Bukkit.getPlayer(args.length > 2 ? args[2] : sender.getName());
+            if (target == null) {
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Joueur introuvable ou hors ligne.");
                 return true;
             }
 
             try {
-                levelsManager.setExp(player.getUniqueId(), Integer.parseInt(args[1]));
-                //TODO: Message
-                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "");
+                levelsManager.setExp(target.getUniqueId(), Integer.parseInt(args[1]));
+                MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "L'expérience de " + target.getName() + " a été définie à " + args[1] + ".");
             } catch (NumberFormatException exception) {
-                //TODO: Message + Stacktrace
-                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "");
-
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Veuillez entrer un nombre valide.");
+                exception.printStackTrace();
             }
 
             return true;
         }
 
-        // Si la sous-commande est invalide
-        sender.sendMessage("Commande invalide. Utilisez /level ou /level reset <exp|lvl> <player>.");
+        // /level give <joueur> <exp>
+        if (args.length >= 3 && args[0].equalsIgnoreCase("give")) {
+            if (!sender.hasPermission("newhorizon.level.admin")) {
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Vous n'avez pas la permission d'utiliser cette commande.");
+                return true;
+            }
+
+            Player target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Joueur introuvable ou hors ligne.");
+                return true;
+            }
+
+            try {
+                int expToAdd = Integer.parseInt(args[2]);
+                levelsManager.addExp(target.getUniqueId(), expToAdd);
+
+                MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Vous avez donné " + expToAdd + " d'expérience à " + target.getName() + ".");
+                MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), "Vous avez reçu " + expToAdd + " d'expérience !");
+            } catch (NumberFormatException exception) {
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Veuillez entrer un nombre valide.");
+            }
+
+            return true;
+        }
+
+
+        // Si commande invalide
+        sender.sendMessage("Commande invalide. Utilisez /level, /level set <exp> <player> ou /level give <player> <exp>.");
         return false;
     }
 }

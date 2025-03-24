@@ -18,8 +18,11 @@ public class MenuItemManager implements Listener {
 
     private final Plugin plugin;
     private final ItemStack menuItem;
-    private final int customModelData = 10298; // 👈 Ton CustomModelData ici
-    private final Material itemMaterial = Material.PAPER; // 👈 Le Matériau ici
+    private final int customModelData = 10298;
+    private final Material itemMaterial = Material.PAPER;
+
+    private final String menuItemName = "§fTéléphone";
+    private final String menuItemLore = "§f\uE021 Pour utiliser";
 
     public MenuItemManager(Plugin plugin) {
         this.plugin = plugin;
@@ -27,8 +30,8 @@ public class MenuItemManager implements Listener {
         menuItem = new ItemStack(itemMaterial);
         ItemMeta meta = menuItem.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("§fTéléphone");
-            meta.setLore(Arrays.asList("§f\uE021 Pour utiliser"));
+            meta.setDisplayName(menuItemName);
+            meta.setLore(Arrays.asList(menuItemLore));
             meta.setCustomModelData(customModelData);
             menuItem.setItemMeta(meta);
         }
@@ -44,7 +47,7 @@ public class MenuItemManager implements Listener {
 
         ItemMeta meta = item.getItemMeta();
         return meta.hasDisplayName()
-                && "§b» Ouvrir le Menu".equals(meta.getDisplayName())
+                && menuItemName.equals(meta.getDisplayName())
                 && meta.hasCustomModelData()
                 && meta.getCustomModelData() == customModelData;
     }

@@ -20,13 +20,13 @@ public class LevelCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Seuls les joueurs peuvent utiliser cette commande !");
-            return true;
-        }
-
         // /level
         if (args.length == 0) {
+            if (!(sender instanceof Player)) {
+                MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Seuls les joueurs peuvent utiliser cette commande !");
+                return true;
+            }
+
             final UUID player = ((Player) sender).getUniqueId();
             MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Votre niveau : " + levelsManager.getLevel(player));
             MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Votre expérience actuelle : " + levelsManager.getExp(player));
@@ -75,8 +75,8 @@ public class LevelCommand implements CommandExecutor {
                 int expToAdd = Integer.parseInt(args[2]);
                 levelsManager.addExp(target.getUniqueId(), expToAdd);
 
-                MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Vous avez donné " + expToAdd + " d'expérience à " + target.getName() + ".");
-                MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), "Vous avez reçu " + expToAdd + " d'expérience !");
+                // MessageUtil.sendMessage(sender, Main.get().getPrefixInfo(), "Vous avez donné " + expToAdd + " d'expérience à " + target.getName() + ".");
+                // MessageUtil.sendMessage(target, Main.get().getPrefixInfo(), "Vous avez reçu " + expToAdd + " d'expérience !");
             } catch (NumberFormatException exception) {
                 MessageUtil.sendMessage(sender, Main.get().getPrefixError(), "Veuillez entrer un nombre valide.");
             }
@@ -84,9 +84,9 @@ public class LevelCommand implements CommandExecutor {
             return true;
         }
 
-
-        // Si commande invalide
+        // Commande invalide
         sender.sendMessage("Commande invalide. Utilisez /level, /level set <exp> <player> ou /level give <player> <exp>.");
         return false;
     }
+
 }

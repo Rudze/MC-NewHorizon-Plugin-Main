@@ -76,6 +76,13 @@ public final class Main extends JavaPlugin implements Listener {
             return;
         }
 
+        // Initialiser EconomyManager AVANT setupVault()
+        economyManager = new EconomyManager(database);
+        economyManager.addMoneyColumnIfNotExists();
+
+        // Enregistrement de VaultEconomy dans Vault
+        setupVault();
+
         // Charger LuckPerms
         LuckPerms luckPerms = getServer().getServicesManager().load(LuckPerms.class);
         if (luckPerms == null) {
@@ -84,36 +91,31 @@ public final class Main extends JavaPlugin implements Listener {
             return;
         }
 
-        // Initialiser EconomyManager
-        economyManager = new EconomyManager(database);
-        economyManager.addMoneyColumnIfNotExists();
-
-        // Setup Vault
-        setupVault();
-
-        // Initialiser HomeManager et WarpManager
+        // Initialiser les autres modules
         homesManager = new HomesManager();
         levelsManager = new LevelsManager();
         warpManager = new WarpManager();
         warpManager.loadWarpsFromConfig();
 
-        // Initialiser le gestionnaire de chat
+        // Gestion du chat avec LuckPerms
         new Chat(this, luckPerms);
 
-        // Vérifier si PlaceholderAPI est installé
+        // PlaceholderAPI
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new LevelPlaceholder().register();
         } else {
             getLogger().warning("PlaceholderAPI non détecté. Les placeholders ne fonctionneront pas.");
         }
 
-        // Enregistrer les événements et les commandes
+        // Événements et UI
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
-        getServer().getPluginManager().registerEvents(new MenuItemManager(this), this);
+        Bukkit.getPluginManager().registerEvents(new MenuItemManager(this), this);
 
+        // Téléportation
         tpModule = new TPModule();
 
+        // Commandes
         getCommand("level").setExecutor(new LevelCommand());
         getCommand("tpa").setExecutor(new TeleportCommands(tpModule));
         getCommand("tpaccept").setExecutor(new TeleportCommands(tpModule));
@@ -123,42 +125,47 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("sethome").setExecutor(new HomeCommand());
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("warp").setExecutor(new WarpCommand(warpManager));
-
-        // Enregistrement de la commande /coins
         getCommand("coins").setExecutor(new CoinsCommand(economyManager));
 
-        // Charger les préfixes depuis la configuration
+        // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
         prefixInfo = getConfig().getString("general.prefixInfo", "&a[Info] ");
 
-        getLogger().info("NewHorizon plugin activé avec succès !");
+        getLogger().info("✅ NewHorizon plugin activé avec succès !");
     }
 
     @Override
     public void onDisable() {
-        // Déconnexion de la base
+        // Déconnexion propre
         try {
             if (database != null && !database.isClosed()) {
                 database.close();
             }
         } catch (SQLException ignored) {}
 
-        getLogger().info("NewHorizon plugin désactivé proprement.");
+        getLogger().info("🛑 NewHorizon plugin désactivé proprement.");
     }
 
     private void setupVault() {
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            if (economyManager == null) {
+                getLogger().severe("❌ economyManager est NULL au moment de setupVault !");
+            }
+
             getServer().getServicesManager().register(
                     Economy.class,
                     new VaultEconomy(economyManager),
                     this,
                     ServicePriority.Normal
             );
+
+            getLogger().info("✅ Système d'économie enregistré dans Vault !");
         } else {
-            getLogger().warning("Vault n'est pas installé. L'économie ne fonctionnera pas correctement.");
+            getLogger().warning("⚠️ Vault n'est pas installé. L'économie ne fonctionnera pas correctement.");
         }
     }
 
+    // Getters
     public String getPrefixError() {
         return prefixError;
     }

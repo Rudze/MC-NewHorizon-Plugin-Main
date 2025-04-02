@@ -8,6 +8,9 @@ author: Rudy
 depend: [LuckPerms, Vault]
 softdepend: ["PlaceholderAPI"]
 
+loadbefore:
+  - EconomyShopGUI-Premium
+
 commands:
   level:
     description: Affiche votre niveau, votre expérience ou réinitialise les stats d'un joueur.

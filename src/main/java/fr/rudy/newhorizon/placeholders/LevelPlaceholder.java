@@ -2,9 +2,9 @@ package fr.rudy.newhorizon.placeholders;
 
 import fr.rudy.newhorizon.Main;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 public class LevelPlaceholder extends PlaceholderExpansion {
@@ -25,12 +25,12 @@ public class LevelPlaceholder extends PlaceholderExpansion {
 
     @Override
     public boolean persist() {
-        return true; // Permet de s'assurer que l'expansion reste active après un reload.
+        return true;
     }
 
     @Override
     public boolean canRegister() {
-        return true; // Permet l'enregistrement de l'expansion.
+        return true;
     }
 
     @Override
@@ -39,43 +39,45 @@ public class LevelPlaceholder extends PlaceholderExpansion {
             return "";
         }
 
-        // Identifier des parties du placeholder : exemple "level_<playername>"
+        // Ex: %newhorizon_level_KmiLKze_%
         String[] parts = identifier.split("_");
-        if (parts.length == 0) {
-            return null; // Si aucun identifiant valide, retourne null
-        }
 
-        String placeholder = parts[0]; // Le type de placeholder, par exemple "level" ou "exp"
-        String targetPlayerName = parts.length > 1 ? parts[1] : null; // Nom du joueur cible si fourni
+        if (parts.length == 1) {
+            // %newhorizon_level% ou %newhorizon_exp%
+            String placeholder = parts[0];
 
-        UUID targetUuid;
+            if (player == null) return "";
 
-        // Récupération du joueur ciblé
-        if (targetPlayerName != null) {
-            Player targetPlayer = Main.get().getServer().getPlayerExact(targetPlayerName);
+            if (placeholder.equalsIgnoreCase("level")) {
+                return String.valueOf(Main.get().getLevelsManager().getLevel(player.getUniqueId()));
+            }
+
+            if (placeholder.equalsIgnoreCase("exp")) {
+                return String.valueOf(Main.get().getLevelsManager().getExp(player.getUniqueId()));
+            }
+
+        } else if (parts.length == 2) {
+            // %newhorizon_level_<playername>%
+            String placeholder = parts[0];
+            String targetPlayerName = parts[1];
+
+            Player targetPlayer = Bukkit.getPlayer(targetPlayerName); // insensible à la casse
+
             if (targetPlayer == null) {
-                return "Joueur introuvable"; // Si le joueur n'est pas trouvé
+                return "Joueur introuvable";
             }
-            targetUuid = targetPlayer.getUniqueId();
-        } else {
-            // Si aucun joueur cible n'est spécifié, on utilise le joueur actuel
-            if (player == null) {
-                return ""; // Aucun joueur actuel (erreur)
+
+            UUID targetUuid = targetPlayer.getUniqueId();
+
+            if (placeholder.equalsIgnoreCase("level")) {
+                return String.valueOf(Main.get().getLevelsManager().getLevel(targetUuid));
             }
-            targetUuid = player.getUniqueId();
+
+            if (placeholder.equalsIgnoreCase("exp")) {
+                return String.valueOf(Main.get().getLevelsManager().getExp(targetUuid));
+            }
         }
 
-        // Placeholder pour le niveau
-        if (placeholder.equalsIgnoreCase("level")) {
-            return String.valueOf(Main.get().getLevelsManager().getLevel(targetUuid));
-        }
-
-        // Placeholder pour l'expérience
-        if (placeholder.equalsIgnoreCase("exp")) {
-            return String.valueOf(Main.get().getLevelsManager().getExp(targetUuid));
-        }
-
-        return null; // Retourne null si le placeholder n'est pas reconnu
+        return null; // placeholder inconnu
     }
-
 }

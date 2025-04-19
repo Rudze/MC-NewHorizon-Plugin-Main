@@ -50,3 +50,19 @@ commands:
     usage: /world <create|remove|tp|setspawn> <nom> [joueur]
     permission: newhorizon.admin.world
     permission-message: Vous n'avez pas la permission d'utiliser cette commande.
+
+  city:
+    description: Gère ta ville (create, setspawn, tp, like...)
+    usage: /city <create|setspawn|tp|remove|like|info|leave>
+
+  cityadmin:
+    description: Commande admin pour gérer les villes
+    usage: /cityadmin <subcommand>
+    permission: newhorizon.city.admin
+    permission-message: §cVous n'avez pas la permission.
+
+  wiki:
+    description: Ouvre le wiki de GalaxyNetwork
+    usage: /wiki
+
+

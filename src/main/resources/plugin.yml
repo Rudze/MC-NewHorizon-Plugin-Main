@@ -65,4 +65,12 @@ commands:
     description: Ouvre le wiki de GalaxyNetwork
     usage: /wiki
 
+  setspawn:
+    description: Définit le spawn du monde
+    permission: newhorizon.setspawn
+
+  spawn:
+    description: Se téléporter au spawn du serveur
+    usage: /spawn
+
 

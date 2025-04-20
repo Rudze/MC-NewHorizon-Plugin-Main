@@ -1,7 +1,7 @@
 name: NewHorizon
-version: 'v1.9'
+version: 'v1.10'
 main: fr.rudy.newhorizon.Main
-api-version: '1.21'
+api-version: '1.24'
 prefix: NewHorizon
 author: Rudy
 

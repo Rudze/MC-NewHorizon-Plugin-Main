@@ -53,8 +53,8 @@ public class CityGUIListener implements Listener {
                     player.performCommand("wiki");
                 }
                 default -> {
-                    if (displayName.startsWith("§f🏙️ ")) {
-                        String cityName = displayName.substring("§f🏙️ ".length()).trim();
+                    if (displayName.startsWith("§f")) {
+                        String cityName = displayName.substring("§f".length()).trim();
                         player.closeInventory();
                         player.performCommand("city tp " + cityName);
                     }

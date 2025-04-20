@@ -6,7 +6,7 @@
 
     <groupId>fr.rudy.newhorizon</groupId>
     <artifactId>NewHorizon</artifactId>
-    <version>1.9</version>
+    <version>1.10</version>
     <packaging>jar</packaging>
 
     <name>NewHorizon</name>

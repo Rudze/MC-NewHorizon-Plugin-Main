@@ -27,7 +27,6 @@ public class SpawnTeleportCommand implements CommandExecutor {
 
         player.teleport(spawn);
         player.sendMessage("§aTéléportation au spawn !");
-        player.playSound(player.getLocation(), "newhorizon:newhorizon.select", 1, 1);
         return true;
     }
 }

@@ -83,5 +83,18 @@ warps:
 
 chat-format: "{prefix}{name}&r: {message}"
 group-formats:
-  default: "&f[lvl] %newhorizon_level% &7{name}: {message}"
-  admin: "&f[lvl] %newhorizon_level% &4{name}: {message}"
+  default: "{prefix} &7{name}: &f{message}"
+  vip: "{prefix} &e{name}: &f{message}"
+  admin: "{prefix} &4{name}: &f{message}"
+
+tablist-format: "&7[lvl %newhorizon_level_{name}%] {prefix} &7{name}"
+tablist-groups:
+  default: "&f[lvl %newhorizon_level_{name}%] {prefix} &f{name}"
+  vip: "&f[lvl %newhorizon_level_{name}%] {prefix} &e{name}"
+  admin: "&f[lvl %newhorizon_level_{name}%] {prefix} &4{name}"
+
+nametag-format: "{prefix} &f"
+nametag-groups:
+  default: "&f[lvl %newhorizon_level_{name}%] {prefix} &f"
+  vip: "&f[lvl %newhorizon_level_{name}%] {prefix} &e}"
+  admin: "&f[lvl %newhorizon_level_{name}%] {prefix} &4"

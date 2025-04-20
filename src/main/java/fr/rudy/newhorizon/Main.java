@@ -10,9 +10,12 @@ import fr.rudy.newhorizon.home.HomesManager;
 import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
+import fr.rudy.newhorizon.spawn.CoreSpawnManager;
+import fr.rudy.newhorizon.spawn.JoinSpawnListener;
 import fr.rudy.newhorizon.teleport.TPModule;
 import fr.rudy.newhorizon.ui.CityGUIListener;
 import fr.rudy.newhorizon.ui.MenuItemManager;
+import fr.rudy.newhorizon.ui.NameTagListener;
 import fr.rudy.newhorizon.ui.TablistManager;
 import fr.rudy.newhorizon.warp.WarpManager;
 import fr.rudy.newhorizon.world.WorldSpawnManager;
@@ -52,6 +55,7 @@ public final class Main extends JavaPlugin implements Listener {
     private CityManager cityManager;
     private ClaimManager claimManager;
     private CityBankManager cityBankManager;
+    private CoreSpawnManager coreSpawnManager;
 
     private String prefixError;
     private String prefixInfo;
@@ -83,6 +87,8 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new CityInviteListener(), this);
         Bukkit.getPluginManager().registerEvents(new ChunkProtectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new CityGUIListener(), this);
+        Bukkit.getPluginManager().registerEvents(new JoinSpawnListener(coreSpawnManager), this);
+        Bukkit.getPluginManager().registerEvents(new NameTagListener(), this);
 
         // Tablist
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -105,6 +111,10 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("city").setExecutor(new CityCommand());
         getCommand("cityadmin").setExecutor(new CityAdminCommand());
         getCommand("wiki").setExecutor(new WikiCommand());
+        getCommand("setspawn").setExecutor(new CommandSpawn());
+        getCommand("spawn").setExecutor(new SpawnTeleportCommand());
+
+
 
 
 
@@ -164,6 +174,16 @@ public final class Main extends JavaPlugin implements Listener {
                                 "city_id INTEGER NOT NULL, " +
                                 "PRIMARY KEY (chunk_x, chunk_z, world))"
                 );
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS newhorizon_core_spawn (" +
+                                "id INTEGER PRIMARY KEY CHECK (id = 0), " +
+                                "world TEXT NOT NULL, " +
+                                "x DOUBLE NOT NULL, " +
+                                "y DOUBLE NOT NULL, " +
+                                "z DOUBLE NOT NULL, " +
+                                "yaw FLOAT NOT NULL, " +
+                                "pitch FLOAT NOT NULL)"
+                );
             }
 
         } catch (SQLException e) {
@@ -185,6 +205,9 @@ public final class Main extends JavaPlugin implements Listener {
         claimManager = new ClaimManager();
         tpModule = new TPModule();
         cityBankManager = new CityBankManager();
+        worldSpawnManager = new WorldSpawnManager(getDatabase());
+        coreSpawnManager = new CoreSpawnManager(database);
+
 
         // LuckPerms
         LuckPerms luckPerms = getServer().getServicesManager().load(LuckPerms.class);
@@ -278,5 +301,10 @@ public final class Main extends JavaPlugin implements Listener {
     public CityBankManager getCityBankManager() {
         return cityBankManager;
     }
+
+    public CoreSpawnManager getCoreSpawnManager() {
+        return coreSpawnManager;
+    }
+
 
 }

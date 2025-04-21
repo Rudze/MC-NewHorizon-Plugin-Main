@@ -3,6 +3,7 @@ package fr.rudy.newhorizon;
 import fr.rudy.newhorizon.chat.Chat;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
+import fr.rudy.newhorizon.core.PlayerConnectionListener;
 import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
@@ -101,6 +102,7 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new JoinSpawnListener(coreSpawnManager), this);
         Bukkit.getPluginManager().registerEvents(new NameTagListener(), this);
         Bukkit.getPluginManager().registerEvents(new FlightPotionListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerConnectionListener(), this);
 
         // Tablist
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

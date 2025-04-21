@@ -1,7 +1,7 @@
 name: NewHorizon
-version: 'v1.10'
+version: 'v1.11'
 main: fr.rudy.newhorizon.Main
-api-version: '1.24'
+api-version: '1.21'
 prefix: NewHorizon
 author: Rudy
 
@@ -72,5 +72,10 @@ commands:
   spawn:
     description: Se téléporter au spawn du serveur
     usage: /spawn
+
+  customitems:
+    description: Donne un item custom
+    usage: /customitems <item>
+    permission: newhorizon.admin
 
 

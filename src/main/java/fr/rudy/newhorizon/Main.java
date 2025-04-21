@@ -7,6 +7,8 @@ import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
+import fr.rudy.newhorizon.itemscustom.CustomItems;
+import fr.rudy.newhorizon.itemscustom.FlightPotionListener;
 import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
@@ -65,10 +67,19 @@ public final class Main extends JavaPlugin implements Listener {
         return pendingInvites;
     }
 
+    private CustomItems customItems;
+
+    public CustomItems getCustomItems() {
+        return customItems;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
+
+        // Initialise customItems
+        customItems = new CustomItems(this);
 
         setupDatabase();
         setupManagers();
@@ -89,6 +100,7 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new CityGUIListener(), this);
         Bukkit.getPluginManager().registerEvents(new JoinSpawnListener(coreSpawnManager), this);
         Bukkit.getPluginManager().registerEvents(new NameTagListener(), this);
+        Bukkit.getPluginManager().registerEvents(new FlightPotionListener(this), this);
 
         // Tablist
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -113,9 +125,14 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("wiki").setExecutor(new WikiCommand());
         getCommand("setspawn").setExecutor(new CommandSpawn());
         getCommand("spawn").setExecutor(new SpawnTeleportCommand());
+        getCommand("customitems").setExecutor(new CustomItemsCommand(this));
 
-
-
+        System.out.println("[DEBUG] Commande /customitems enregistrée.");
+        if (getCommand("customitems") == null) {
+            System.out.println("[ERREUR] La commande /customitems n'est PAS reconnue par Spigot !");
+        } else {
+            System.out.println("[OK] Spigot reconnait la commande /customitems.");
+        }
 
 
         // Préfixes

@@ -129,14 +129,6 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("spawn").setExecutor(new SpawnTeleportCommand());
         getCommand("customitems").setExecutor(new CustomItemsCommand(this));
 
-        System.out.println("[DEBUG] Commande /customitems enregistrée.");
-        if (getCommand("customitems") == null) {
-            System.out.println("[ERREUR] La commande /customitems n'est PAS reconnue par Spigot !");
-        } else {
-            System.out.println("[OK] Spigot reconnait la commande /customitems.");
-        }
-
-
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
         prefixInfo = getConfig().getString("general.prefixInfo", "&a[Info] ");

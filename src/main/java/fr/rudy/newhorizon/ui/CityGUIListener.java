@@ -10,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class CityGUIListener implements Listener {
@@ -28,78 +27,79 @@ public class CityGUIListener implements Listener {
 
         String title = event.getView().getTitle();
         String displayName = meta.getDisplayName();
-        event.setCancelled(true);
 
-        // Son de clic
-        player.playSound(player.getLocation(), "newhorizon:newhorizon.select", 1f, 1f);
+        // ✅ On ne gère que les menus custom
+        if (title.contains(":citylist_menu:") || title.contains(":mycity_menu:")) {
+            event.setCancelled(true); // ← Empêche le déplacement seulement dans les GUIs custom
+            player.playSound(player.getLocation(), "newhorizon:newhorizon.select", 1f, 1f);
 
-        // 📘 Menu des villes
-        if (title.contains(":citylist_menu:")) {
-            switch (displayName) {
-                case "§7Retour" -> {
-                    player.closeInventory();
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open phone_menu " + player.getName());
-                }
-                case "§bCréer une ville" -> {
-                    player.closeInventory();
-                    player.performCommand("city create");
-                }
-                case "§bMa ville" -> {
-                    player.closeInventory();
-                    new CityManageGUI().open(player);
-                }
-                case "§bWiki & Guide" -> {
-                    player.closeInventory();
-                    player.performCommand("wiki");
-                }
-                default -> {
-                    if (displayName.startsWith("§f")) {
-                        String cityName = displayName.substring("§f".length()).trim();
+            // 📘 Menu des villes
+            if (title.contains(":citylist_menu:")) {
+                switch (displayName) {
+                    case "§7Retour" -> {
                         player.closeInventory();
-                        player.performCommand("city tp " + cityName);
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open phone_menu " + player.getName());
+                    }
+                    case "§bCréer une ville" -> {
+                        player.closeInventory();
+                        player.performCommand("city create");
+                    }
+                    case "§bMa ville" -> {
+                        player.closeInventory();
+                        new CityManageGUI().open(player);
+                    }
+                    case "§bWiki & Guide" -> {
+                        player.closeInventory();
+                        player.performCommand("wiki");
+                    }
+                    default -> {
+                        if (displayName.startsWith("§f")) {
+                            String cityName = displayName.substring("§f".length()).trim();
+                            player.closeInventory();
+                            player.performCommand("city tp " + cityName);
+                        }
                     }
                 }
             }
-        }
 
-        // ⚙️ Menu de gestion de ville
-        else if (title.contains(":mycity_menu:")) {
-            switch (displayName) {
-                case "§7Retour" -> {
-                    player.closeInventory();
-                    new CityGUI().openCityList(player);
-                }
-                case "§4Supprimer la ville" -> {
-                    player.closeInventory();
-                    player.performCommand("city remove");
-                }
-                case "§4Quitter la ville" -> {
-                    player.closeInventory();
-                    player.performCommand("city leave");
-                }
-                case "§bWiki & Guide" -> {
-                    player.closeInventory();
-                    player.performCommand("wiki");
-                }
-                case "§7Modifier la bannière" -> {
-                    player.closeInventory();
-                    player.performCommand("city setbanner");
-                }
-                case "§aAjouter un membre" -> {
-                    player.closeInventory();
-                    player.performCommand("city invite");
-                }
-                case "§7Placer le spawn" -> {
-                    player.closeInventory();
-                    player.performCommand("city setspawn");
-                    player.playSound(player.getLocation(), "newhorizon:newhorizon.select", 1f, 1f);
-                }
-                case "§7Protéger" -> {
-                    player.closeInventory();
-                    if (event.getClick() == ClickType.LEFT) {
-                        player.performCommand("city claim");
-                    } else if (event.getClick() == ClickType.RIGHT) {
-                        player.performCommand("city unclaim");
+            // ⚙️ Menu de gestion de ville
+            else if (title.contains(":mycity_menu:")) {
+                switch (displayName) {
+                    case "§7Retour" -> {
+                        player.closeInventory();
+                        new CityGUI().openCityList(player);
+                    }
+                    case "§4Supprimer la ville" -> {
+                        player.closeInventory();
+                        player.performCommand("city remove");
+                    }
+                    case "§4Quitter la ville" -> {
+                        player.closeInventory();
+                        player.performCommand("city leave");
+                    }
+                    case "§bWiki & Guide" -> {
+                        player.closeInventory();
+                        player.performCommand("wiki");
+                    }
+                    case "§7Modifier la bannière" -> {
+                        player.closeInventory();
+                        player.performCommand("city setbanner");
+                    }
+                    case "§aAjouter un membre" -> {
+                        player.closeInventory();
+                        player.performCommand("city invite");
+                    }
+                    case "§7Placer le spawn" -> {
+                        player.closeInventory();
+                        player.performCommand("city setspawn");
+                    }
+                    case "§7Protéger" -> {
+                        player.closeInventory();
+                        if (event.getClick() == ClickType.LEFT) {
+                            player.performCommand("city claim");
+                        } else if (event.getClick() == ClickType.RIGHT) {
+                            player.performCommand("city unclaim");
+                        }
                     }
                 }
             }

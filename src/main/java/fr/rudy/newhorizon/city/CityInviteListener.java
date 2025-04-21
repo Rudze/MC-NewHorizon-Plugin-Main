@@ -1,6 +1,7 @@
 package fr.rudy.newhorizon.city;
 
 import fr.rudy.newhorizon.Main;
+import fr.rudy.newhorizon.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -17,6 +18,8 @@ public class CityInviteListener implements Listener {
     public static final Set<UUID> awaitingDemoteInput = new HashSet<>();
     public static final Map<UUID, UUID> awaitingConfirmPromote = new HashMap<>();
 
+    private final Main plugin = Main.get();
+
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         Player sender = event.getPlayer();
@@ -28,34 +31,34 @@ public class CityInviteListener implements Listener {
             event.setCancelled(true);
 
             if (input.equalsIgnoreCase("quitter")) {
-                sender.sendMessage("§cInvitation annulée.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cInvitation annulée.");
                 return;
             }
 
             Player target = Bukkit.getPlayerExact(input);
             if (target == null || !target.isOnline()) {
-                sender.sendMessage("§cJoueur introuvable ou hors ligne.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cJoueur introuvable ou hors ligne.");
                 return;
             }
 
             UUID targetUUID = target.getUniqueId();
-            String cityName = Main.get().getCityManager().getCityName(senderUUID);
-            CityRank senderRank = Main.get().getCityManager().getCityRank(senderUUID);
+            String cityName = plugin.getCityManager().getCityName(senderUUID);
+            CityRank senderRank = plugin.getCityManager().getCityRank(senderUUID);
 
             if (cityName == null || senderRank == null || !(senderRank == CityRank.LEADER || senderRank == CityRank.COLEADER)) {
-                sender.sendMessage("§cVous n'avez pas la permission d'inviter.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cVous n'avez pas la permission d'inviter.");
                 return;
             }
 
-            if (Main.get().getCityManager().getCityName(targetUUID) != null) {
-                sender.sendMessage("§cCe joueur est déjà dans une ville.");
+            if (plugin.getCityManager().getCityName(targetUUID) != null) {
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cCe joueur est déjà dans une ville.");
                 return;
             }
 
-            Main.get().getPendingInvites().put(targetUUID, cityName);
-            target.sendMessage("§aVous avez été invité à rejoindre la ville §b" + cityName + "§a !");
-            target.sendMessage("§7Faites §e/city accept §7pour accepter ou §c/city deny §7pour refuser.");
-            sender.sendMessage("§aInvitation envoyée à §e" + target.getName() + "§a.");
+            plugin.getPendingInvites().put(targetUUID, cityName);
+            MessageUtil.sendMessage(target, plugin.getPrefixInfo(), "&bVous avez été invité à rejoindre la ville &d" + cityName + "&b !");
+            MessageUtil.sendMessage(target, plugin.getPrefixInfo(), "&7Faites &e/city accept &7pour accepter ou &c/city deny &7pour refuser.");
+            MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "&bInvitation envoyée à &d" + target.getName() + "&b.");
             return;
         }
 
@@ -64,42 +67,42 @@ public class CityInviteListener implements Listener {
             event.setCancelled(true);
 
             if (input.equalsIgnoreCase("quitter")) {
-                sender.sendMessage("§cPromotion annulée.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cPromotion annulée.");
                 return;
             }
 
             Player target = Bukkit.getPlayerExact(input);
             if (target == null || !target.isOnline()) {
-                sender.sendMessage("§cJoueur introuvable ou hors ligne.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cJoueur introuvable ou hors ligne.");
                 return;
             }
 
             UUID targetUUID = target.getUniqueId();
-            String city = Main.get().getCityManager().getCityName(senderUUID);
-            CityRank senderRank = Main.get().getCityManager().getCityRank(senderUUID);
-            CityRank targetRank = Main.get().getCityManager().getCityRank(targetUUID);
+            String city = plugin.getCityManager().getCityName(senderUUID);
+            CityRank senderRank = plugin.getCityManager().getCityRank(senderUUID);
+            CityRank targetRank = plugin.getCityManager().getCityRank(targetUUID);
 
             if (city == null || senderRank != CityRank.LEADER) {
-                sender.sendMessage("§cSeul le chef peut promouvoir un joueur.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cSeul le chef peut promouvoir un joueur.");
                 return;
             }
 
-            if (!city.equals(Main.get().getCityManager().getCityName(targetUUID))) {
-                sender.sendMessage("§cCe joueur n’est pas dans votre ville.");
+            if (!city.equals(plugin.getCityManager().getCityName(targetUUID))) {
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cCe joueur n’est pas dans votre ville.");
                 return;
             }
 
             if (targetRank == CityRank.COLEADER) {
                 awaitingConfirmPromote.put(senderUUID, targetUUID);
-                sender.sendMessage("§e⚠️ Vous êtes sur le point de transférer votre rôle de chef à §b" + target.getName() + "§e.");
-                sender.sendMessage("§7Tapez §a/city confirm §7pour confirmer ou ignorez pour annuler.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "&e⚠️ &bVous êtes sur le point de transférer votre rôle de chef à &d" + target.getName() + "&b.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "&7Tapez &a/city confirm &7pour confirmer ou ignorez pour annuler.");
             } else {
-                boolean success = Main.get().getCityManager().setMember(city, targetUUID, CityRank.COLEADER);
+                boolean success = plugin.getCityManager().setMember(city, targetUUID, CityRank.COLEADER);
                 if (success) {
-                    sender.sendMessage("§a" + target.getName() + " est maintenant Sous-chef !");
-                    target.sendMessage("§aVous avez été promu Sous-chef par §e" + sender.getName() + "§a !");
+                    MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "&b&d" + target.getName() + " &best maintenant Sous-chef !");
+                    MessageUtil.sendMessage(target, plugin.getPrefixInfo(), "&bVous avez été promu Sous-chef par &d" + sender.getName() + "&b !");
                 } else {
-                    sender.sendMessage("§cErreur lors de la promotion.");
+                    MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cErreur lors de la promotion.");
                 }
             }
             return;
@@ -110,47 +113,47 @@ public class CityInviteListener implements Listener {
             event.setCancelled(true);
 
             if (input.equalsIgnoreCase("quitter")) {
-                sender.sendMessage("§cRétrogradation annulée.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cRétrogradation annulée.");
                 return;
             }
 
             Player target = Bukkit.getPlayerExact(input);
             if (target == null || !target.isOnline()) {
-                sender.sendMessage("§cJoueur introuvable ou hors ligne.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cJoueur introuvable ou hors ligne.");
                 return;
             }
 
             UUID targetUUID = target.getUniqueId();
-            String city = Main.get().getCityManager().getCityName(senderUUID);
-            CityRank senderRank = Main.get().getCityManager().getCityRank(senderUUID);
-            CityRank targetRank = Main.get().getCityManager().getCityRank(targetUUID);
+            String city = plugin.getCityManager().getCityName(senderUUID);
+            CityRank senderRank = plugin.getCityManager().getCityRank(senderUUID);
+            CityRank targetRank = plugin.getCityManager().getCityRank(targetUUID);
 
             if (city == null || senderRank != CityRank.LEADER) {
-                sender.sendMessage("§cSeul le chef peut rétrograder un joueur.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cSeul le chef peut rétrograder un joueur.");
                 return;
             }
 
-            if (!city.equals(Main.get().getCityManager().getCityName(targetUUID))) {
-                sender.sendMessage("§cCe joueur n’est pas dans votre ville.");
+            if (!city.equals(plugin.getCityManager().getCityName(targetUUID))) {
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cCe joueur n’est pas dans votre ville.");
                 return;
             }
 
             if (targetUUID.equals(senderUUID)) {
-                sender.sendMessage("§cVous ne pouvez pas vous rétrograder vous-même.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cVous ne pouvez pas vous rétrograder vous-même.");
                 return;
             }
 
             if (targetRank == null || targetRank == CityRank.MEMBER) {
-                sender.sendMessage("§cCe joueur ne peut pas être rétrogradé davantage.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cCe joueur ne peut pas être rétrogradé davantage.");
                 return;
             }
 
-            boolean success = Main.get().getCityManager().setMember(city, targetUUID, CityRank.MEMBER);
+            boolean success = plugin.getCityManager().setMember(city, targetUUID, CityRank.MEMBER);
             if (success) {
-                sender.sendMessage("§aLe joueur §e" + target.getName() + " §aa été rétrogradé au rang §cMembre§a.");
-                target.sendMessage("§cVous avez été rétrogradé au rang §fMembre §cdans la ville §e" + city + "§c.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixInfo(), "&bLe joueur &d" + target.getName() + " &ba été rétrogradé au rang &dMembre&b.");
+                MessageUtil.sendMessage(target, plugin.getPrefixError(), "&cVous avez été rétrogradé au rang &fMembre &cdans la ville &d" + city + "&c.");
             } else {
-                sender.sendMessage("§cErreur lors de la rétrogradation.");
+                MessageUtil.sendMessage(sender, plugin.getPrefixError(), "&cErreur lors de la rétrogradation.");
             }
         }
     }

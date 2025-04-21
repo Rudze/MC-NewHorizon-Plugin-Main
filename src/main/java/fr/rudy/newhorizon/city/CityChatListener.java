@@ -1,6 +1,7 @@
 package fr.rudy.newhorizon.city;
 
 import fr.rudy.newhorizon.Main;
+import fr.rudy.newhorizon.utils.MessageUtil;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -22,6 +23,7 @@ public class CityChatListener implements Listener {
     private final CityManager cityManager = Main.get().getCityManager();
     private final CityBankManager cityBankManager = Main.get().getCityBankManager();
     private final Economy vaultEconomy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
+    private final Main plugin = Main.get();
 
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
@@ -34,13 +36,13 @@ public class CityChatListener implements Listener {
             if (waitingForCityName.containsKey(uuid)) {
                 waitingForCityName.remove(uuid);
                 cityCreationMode.remove(uuid);
-                player.sendMessage("§cCréation annulée.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cCréation annulée.");
             }
             if (awaitingDeposit.remove(uuid)) {
-                player.sendMessage("§cDépôt annulé.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cDépôt annulé.");
             }
             if (awaitingWithdraw.remove(uuid)) {
-                player.sendMessage("§cRetrait annulé.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cRetrait annulé.");
             }
             event.setCancelled(true);
             return;
@@ -54,25 +56,25 @@ public class CityChatListener implements Listener {
             try {
                 double amount = Double.parseDouble(msg);
                 if (amount <= 0) {
-                    player.sendMessage("§cMontant invalide.");
+                    MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cMontant invalide.");
                     return;
                 }
 
                 if (!vaultEconomy.has(player, amount)) {
-                    player.sendMessage("§cVous n'avez pas assez de pièces.");
+                    MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cVous n'avez pas assez de pièces.");
                     return;
                 }
 
                 int cityId = cityManager.getCityId(uuid);
                 if (cityBankManager.deposit(cityId, amount)) {
                     vaultEconomy.withdrawPlayer(player, amount);
-                    player.sendMessage("§aVous avez déposé §e" + amount + "§a pièces dans la banque de votre ville !");
+                    MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "&bVous avez déposé &d" + amount + " &bpièces dans la banque de votre ville !");
                 } else {
-                    player.sendMessage("§cErreur lors du dépôt.");
+                    MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cErreur lors du dépôt.");
                 }
 
             } catch (NumberFormatException e) {
-                player.sendMessage("§cVeuillez entrer un montant valide.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cVeuillez entrer un montant valide.");
             }
             return;
         }
@@ -85,20 +87,20 @@ public class CityChatListener implements Listener {
             try {
                 double amount = Double.parseDouble(msg);
                 if (amount <= 0) {
-                    player.sendMessage("§cMontant invalide.");
+                    MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cMontant invalide.");
                     return;
                 }
 
                 int cityId = cityManager.getCityId(uuid);
                 if (cityBankManager.withdraw(cityId, amount)) {
                     vaultEconomy.depositPlayer(player, amount);
-                    player.sendMessage("§aVous avez retiré §e" + amount + "§a pièces de la banque de la ville !");
+                    MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "&bVous avez retiré &d" + amount + " &bpièces de la banque de la ville !");
                 } else {
-                    player.sendMessage("§cFonds insuffisants dans la banque de la ville.");
+                    MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cFonds insuffisants dans la banque de la ville.");
                 }
 
             } catch (NumberFormatException e) {
-                player.sendMessage("§cVeuillez entrer un montant valide.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cVeuillez entrer un montant valide.");
             }
             return;
         }
@@ -112,14 +114,14 @@ public class CityChatListener implements Listener {
 
         if (cityCreationMode.remove(uuid)) {
             if (cityManager.getCityLocation(cityName) != null) {
-                player.sendMessage("§cUne ville avec ce nom existe déjà.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cUne ville avec ce nom existe déjà.");
                 return;
             }
 
             if (cityManager.createCity(uuid, cityName, location)) {
-                player.sendMessage("§aVille §e" + cityName + " §acréée avec succès ! Vous êtes le chef 👑");
+                MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "&bVille &d" + cityName + " &bcréée avec succès ! Vous êtes le chef 👑");
             } else {
-                player.sendMessage("§cErreur lors de la création de la ville.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cErreur lors de la création de la ville.");
             }
 
         } else {
@@ -127,19 +129,19 @@ public class CityChatListener implements Listener {
             CityRank rank = cityManager.getCityRank(uuid);
 
             if (currentCity == null || rank == null) {
-                player.sendMessage("§cVous n'appartenez à aucune ville.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cVous n'appartenez à aucune ville.");
                 return;
             }
 
             if (!(rank == CityRank.LEADER || rank == CityRank.COLEADER)) {
-                player.sendMessage("§cSeul le chef ou le sous-chef peut modifier le spawn.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cSeul le chef ou le sous-chef peut modifier le spawn.");
                 return;
             }
 
             if (cityManager.createCity(uuid, currentCity, location)) {
-                player.sendMessage("§aSpawn de votre ville §e" + currentCity + " §amis à jour !");
+                MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "&bSpawn de votre ville &d" + currentCity + " &bmis à jour !");
             } else {
-                player.sendMessage("§cErreur lors de la mise à jour du spawn.");
+                MessageUtil.sendMessage(player, plugin.getPrefixError(), "&cErreur lors de la mise à jour du spawn.");
             }
         }
     }

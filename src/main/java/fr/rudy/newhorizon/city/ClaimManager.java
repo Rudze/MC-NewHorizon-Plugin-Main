@@ -13,25 +13,43 @@ public class ClaimManager {
 
     private final Connection db = Main.get().getDatabase();
 
-    // ✅ Revendiquer un chunk
+    /**
+     * Revendique un chunk pour une ville.
+     */
     public boolean claimChunk(int cityId, Chunk chunk) {
-        if (isChunkClaimed(chunk)) return false;
-
         try (PreparedStatement ps = db.prepareStatement(
                 "INSERT INTO newhorizon_city_claims (chunk_x, chunk_z, world, city_id) VALUES (?, ?, ?, ?)")) {
             ps.setInt(1, chunk.getX());
             ps.setInt(2, chunk.getZ());
             ps.setString(3, chunk.getWorld().getName());
             ps.setInt(4, cityId);
-            ps.executeUpdate();
-            return true;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
-    // 🔍 Vérifie si un chunk est revendiqué
+    /**
+     * Libère un chunk s'il appartient à la ville spécifiée.
+     */
+    public boolean unclaimChunk(int cityId, Chunk chunk) {
+        try (PreparedStatement ps = db.prepareStatement(
+                "DELETE FROM newhorizon_city_claims WHERE chunk_x = ? AND chunk_z = ? AND world = ? AND city_id = ?")) {
+            ps.setInt(1, chunk.getX());
+            ps.setInt(2, chunk.getZ());
+            ps.setString(3, chunk.getWorld().getName());
+            ps.setInt(4, cityId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie si un chunk est revendiqué par n'importe quelle ville.
+     */
     public boolean isChunkClaimed(Chunk chunk) {
         try (PreparedStatement ps = db.prepareStatement(
                 "SELECT 1 FROM newhorizon_city_claims WHERE chunk_x = ? AND chunk_z = ? AND world = ?")) {
@@ -46,14 +64,15 @@ public class ClaimManager {
         return false;
     }
 
-    // 🔍 Récupère l’ID de la ville propriétaire du chunk
+    /**
+     * Récupère l'ID de la ville qui possède le chunk donné.
+     */
     public Integer getChunkOwnerId(Location loc) {
-        Chunk chunk = loc.getChunk();
         try (PreparedStatement ps = db.prepareStatement(
                 "SELECT city_id FROM newhorizon_city_claims WHERE chunk_x = ? AND chunk_z = ? AND world = ?")) {
-            ps.setInt(1, chunk.getX());
-            ps.setInt(2, chunk.getZ());
-            ps.setString(3, chunk.getWorld().getName());
+            ps.setInt(1, loc.getChunk().getX());
+            ps.setInt(2, loc.getChunk().getZ());
+            ps.setString(3, loc.getWorld().getName());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt("city_id");
@@ -64,18 +83,20 @@ public class ClaimManager {
         return null;
     }
 
-    // ❌ Libère un chunk (si la ville est bien propriétaire)
-    public boolean unclaimChunk(int cityId, Chunk chunk) {
+    /**
+     * Retourne le nombre total de claims actifs pour une ville.
+     */
+    public int getClaimCount(int cityId) {
         try (PreparedStatement ps = db.prepareStatement(
-                "DELETE FROM newhorizon_city_claims WHERE chunk_x = ? AND chunk_z = ? AND world = ? AND city_id = ?")) {
-            ps.setInt(1, chunk.getX());
-            ps.setInt(2, chunk.getZ());
-            ps.setString(3, chunk.getWorld().getName());
-            ps.setInt(4, cityId);
-            return ps.executeUpdate() > 0;
+                "SELECT COUNT(*) FROM newhorizon_city_claims WHERE city_id = ?")) {
+            ps.setInt(1, cityId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return 0;
     }
 }

@@ -37,7 +37,7 @@ public class JoinSpawnListener implements Listener {
             Location spawn = spawnManager.getSpawn();
             if (spawn != null) {
                 player.teleport(spawn);
-                player.sendMessage("§a✔ Téléporté au spawn !");
+                //player.sendMessage("§a✔ Téléporté au spawn !");
             }
         }, 20L); // 1 sec après la connexion
     }

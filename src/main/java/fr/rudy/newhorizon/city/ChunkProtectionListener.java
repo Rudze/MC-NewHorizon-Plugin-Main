@@ -1,6 +1,7 @@
 package fr.rudy.newhorizon.city;
 
 import fr.rudy.newhorizon.Main;
+import fr.rudy.newhorizon.utils.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -13,21 +14,23 @@ import java.util.UUID;
 public class ChunkProtectionListener implements Listener {
 
     private final ClaimManager claimManager = new ClaimManager();
+    private final Main plugin = Main.get();
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
         if (!checkAccess(event.getPlayer().getUniqueId(), event.getBlock().getLocation())) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage("§cCe chunk est revendiqué. Vous ne pouvez pas casser ici.");
+            MessageUtil.sendMessage(event.getPlayer(), plugin.getPrefixError(), "&cCe chunk est revendiqué. Vous ne pouvez pas casser ici.");
         }
     }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
+
         if (!checkAccess(event.getPlayer().getUniqueId(), event.getClickedBlock().getLocation())) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage("§cCe chunk est revendiqué. Vous ne pouvez pas interagir ici.");
+            //MessageUtil.sendMessage(event.getPlayer(), plugin.getPrefixError(), "&cCe chunk est revendiqué. Vous ne pouvez pas interagir ici.");
         }
     }
 

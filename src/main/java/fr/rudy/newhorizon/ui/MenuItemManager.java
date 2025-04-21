@@ -77,6 +77,7 @@ public class MenuItemManager implements Listener {
             event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
             Player player = event.getPlayer();
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open phone_menu " + player.getName());
+            player.playSound(player.getLocation(), "newhorizon:newhorizon.phone", 1f, 1f);
         }
     }
 

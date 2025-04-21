@@ -31,7 +31,7 @@ public class CustomItems {
         meta.setColor(Color.AQUA);
         meta.setLore(List.of(
                 "§7Effet: §fPermet de voler",
-                "§7Durée: §f5 minutes",
+                "§7Durée: §f10 minutes",
                 "",
                 "§8» Boire pour activer l'effet"
         ));

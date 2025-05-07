@@ -78,4 +78,20 @@ commands:
     usage: /customitems <item>
     permission: newhorizon.admin
 
+  enderchest:
+    description: Ouvre l'EnderChest (VIP requis)
+    usage: /enderchest
+    aliases: [ec]
 
+  fly:
+    description: Active/Désactive le vol (VIP requis)
+    usage: /fly
+
+  craft:
+    description: Ouvre une table de craft virtuelle (VIP requis)
+    usage: /craft
+
+permissions:
+  vip:
+    description: Permission pour les commandes VIP
+    default: false

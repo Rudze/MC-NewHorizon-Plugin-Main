@@ -128,6 +128,9 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("setspawn").setExecutor(new CommandSpawn());
         getCommand("spawn").setExecutor(new SpawnTeleportCommand());
         getCommand("customitems").setExecutor(new CustomItemsCommand(this));
+        getCommand("fly").setExecutor(new FlyCommand());
+        getCommand("craft").setExecutor(new CraftCommand());
+        getCommand("enderchest").setExecutor(new EnderChestCommand());
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");

@@ -15,11 +15,15 @@ import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
 import fr.rudy.newhorizon.spawn.CoreSpawnManager;
 import fr.rudy.newhorizon.spawn.JoinSpawnListener;
+import fr.rudy.newhorizon.stats.PlayerSessionListener;
+import fr.rudy.newhorizon.stats.SessionStatManager;
+import fr.rudy.newhorizon.stats.StatsGUIListener;
 import fr.rudy.newhorizon.teleport.TPModule;
 import fr.rudy.newhorizon.ui.CityGUIListener;
 import fr.rudy.newhorizon.ui.MenuItemManager;
 import fr.rudy.newhorizon.ui.NameTagListener;
 import fr.rudy.newhorizon.ui.TablistManager;
+import fr.rudy.newhorizon.utils.ScheduledTaskManager;
 import fr.rudy.newhorizon.warp.WarpManager;
 import fr.rudy.newhorizon.world.WorldSpawnManager;
 import net.luckperms.api.LuckPerms;
@@ -59,6 +63,7 @@ public final class Main extends JavaPlugin implements Listener {
     private ClaimManager claimManager;
     private CityBankManager cityBankManager;
     private CoreSpawnManager coreSpawnManager;
+    private SessionStatManager sessionStatManager;
 
     private String prefixError;
     private String prefixInfo;
@@ -103,6 +108,11 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new NameTagListener(), this);
         Bukkit.getPluginManager().registerEvents(new FlightPotionListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerConnectionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerSessionListener(), this);
+        Bukkit.getPluginManager().registerEvents(new StatsGUIListener(), this);
+
+        // Stats
+        sessionStatManager = new SessionStatManager();
 
         // Tablist
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -131,6 +141,9 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("fly").setExecutor(new FlyCommand());
         getCommand("craft").setExecutor(new CraftCommand());
         getCommand("enderchest").setExecutor(new EnderChestCommand());
+        getCommand("stats").setExecutor(new StatsCommand());
+
+
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
@@ -138,6 +151,10 @@ public final class Main extends JavaPlugin implements Listener {
 
         // Chargement automatique des mondes
         loadAllWorlds();
+
+        // Planificateur de commandes (cron-like)
+        ScheduledTaskManager taskManager = new ScheduledTaskManager(this);
+        taskManager.start();
 
         getLogger().info("✅ NewHorizon plugin activé !");
     }
@@ -319,6 +336,8 @@ public final class Main extends JavaPlugin implements Listener {
     public CoreSpawnManager getCoreSpawnManager() {
         return coreSpawnManager;
     }
+
+    public SessionStatManager getSessionStatManager() { return sessionStatManager; }
 
 
 }

@@ -60,7 +60,7 @@ public class NameTagManager {
         team.setPrefix(format);
         team.setSuffix(""); // Optionnel, peut être utilisé si besoin
         team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.ALWAYS);
         team.addEntry(player.getName());
 
         player.setScoreboard(scoreboard);

@@ -1,9 +1,6 @@
 package fr.rudy.newhorizon.level;
 
 import fr.rudy.newhorizon.Main;
-import net.luckperms.api.LuckPerms;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -11,34 +8,41 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LevelsManager {
-    private final Connection database;
 
+    private final Connection database;
     private final int initialExp;
     private final int expIncrementPercent;
+    private final Map<UUID, Integer> expCache = new ConcurrentHashMap<>();
 
     public LevelsManager() {
-        database = Main.get().getDatabase();
-
-        initialExp = Main.get().getConfig().getInt("levels.initialExp");
-        expIncrementPercent = Main.get().getConfig().getInt("levels.expIncrementPercent");
+        this.database = Main.get().getDatabase();
+        this.initialExp = Main.get().getConfig().getInt("levels.initialExp");
+        this.expIncrementPercent = Main.get().getConfig().getInt("levels.expIncrementPercent");
     }
 
     public int getExp(UUID player) {
+        if (expCache.containsKey(player)) {
+            return expCache.get(player);
+        }
+
         try (PreparedStatement statement = database.prepareStatement(
-                "SELECT uuid, experience " +
-                        "FROM newhorizon_player_data " +
-                        "WHERE uuid = ?;"
-        )) {
+                "SELECT experience FROM newhorizon_player_data WHERE uuid = ?;")) {
+
             statement.setString(1, player.toString());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) return 0;
 
-                return resultSet.getInt("experience");
+                int exp = resultSet.getInt("experience");
+                expCache.put(player, exp);
+                return exp;
             }
+
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -50,12 +54,12 @@ public class LevelsManager {
         try (PreparedStatement statement = database.prepareStatement(
                 "INSERT INTO newhorizon_player_data (uuid, experience) " +
                         "VALUES (?, ?) " +
-                        "ON CONFLICT(uuid) DO UPDATE SET " +
-                        "experience = excluded.experience;"
+                        "ON CONFLICT(uuid) DO UPDATE SET experience = excluded.experience;"
         )) {
             statement.setString(1, player.toString());
             statement.setInt(2, exp);
             statement.executeUpdate();
+            expCache.put(player, exp); // met à jour le cache
         } catch (SQLException exception) {
             exception.printStackTrace();
             return false;
@@ -102,11 +106,6 @@ public class LevelsManager {
 
         for (int lvl = oldLevel + 1; lvl <= newLevel; lvl++) {
             String command = "lp user " + player.getName() + " permission set lvl." + lvl;
-
-            // Debug dans le chat in-game
-            //Bukkit.broadcastMessage("§e[DEBUG] §7Commande exécutée: §f" + command);
-
-            // Exécution de la commande par la console
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
         }
 

@@ -98,3 +98,14 @@ nametag-groups:
   default: "&f[lvl %newhorizon_level_{name}%] {prefix} &f"
   vip: "&f[lvl %newhorizon_level_{name}%] {prefix} &e}"
   admin: "&f[lvl %newhorizon_level_{name}%] {prefix} &4"
+
+scheduled-commands:
+  - time: "21:30"
+    days: [5]
+    command: "event magnus"
+  - time: "00:00"
+    days: [ 0, 1, 2, 3, 4, 5, 6 ]
+    command: "farmsshop reload"
+  - time: "12:00"
+    days: [ 0, 1, 2, 3, 4, 5, 6 ]
+    command: "farmsshop reload"

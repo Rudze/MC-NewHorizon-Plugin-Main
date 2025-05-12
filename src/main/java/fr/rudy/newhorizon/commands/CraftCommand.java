@@ -23,7 +23,7 @@ public class CraftCommand implements CommandExecutor {
         }
 
         player.openWorkbench(player.getLocation(), true);
-        MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "§dTable de craft§b ouverte.");
+        //MessageUtil.sendMessage(player, plugin.getPrefixInfo(), "§dTable de craft§b ouverte.");
         return true;
     }
 }

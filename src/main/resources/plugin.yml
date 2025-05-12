@@ -91,6 +91,9 @@ commands:
     description: Ouvre une table de craft virtuelle (VIP requis)
     usage: /craft
 
+  stats:
+    description: Ouvre le menu de statistiques
+
 permissions:
   vip:
     description: Permission pour les commandes VIP

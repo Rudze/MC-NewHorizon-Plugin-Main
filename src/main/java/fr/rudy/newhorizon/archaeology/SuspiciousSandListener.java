@@ -30,69 +30,59 @@ public class SuspiciousSandListener implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
         Block block = event.getClickedBlock();
-        if (block == null) return;
-
-        if (block.getType() != Material.SUSPICIOUS_SAND && block.getType() != Material.SUSPICIOUS_GRAVEL) return;
+        if (block == null || (block.getType() != Material.SUSPICIOUS_SAND && block.getType() != Material.SUSPICIOUS_GRAVEL)) return;
 
         if (!(block.getState() instanceof BrushableBlock brushable)) return;
 
         ItemStack brush = event.getItem();
         if (brush == null || brush.getType() != Material.BRUSH) return;
 
-        Player player = event.getPlayer();
+        // Si le bloc contient déjà un item, on ne change rien (déjà fouillé)
+        if (brushable.getItem() != null && brushable.getItem().getType() != Material.AIR) return;
 
-        List<ItemStack> customLoot = generateVanillaLikeLoot();
-        if (!customLoot.isEmpty()) {
-            brushable.setLootTable(null); // remove vanilla loot
-            brushable.setItem(customLoot.remove(0)); // main loot in block
+        // Génération d'un seul item aléatoire à insérer dans le bloc
+        ItemStack loot = generateLoot();
+        if (loot != null) {
+            brushable.setLootTable(null); // Supprime le loot vanilla
+            brushable.setItem(loot);
             brushable.update();
-
-            // Drop rest around block
-            customLoot.forEach(item -> block.getWorld().dropItemNaturally(block.getLocation().add(0.5, 0.5, 0.5), item));
         }
     }
 
-    private List<ItemStack> generateVanillaLikeLoot() {
-        List<ItemStack> loot = new ArrayList<>();
+    private ItemStack generateLoot() {
         Random rand = new Random();
         double roll = rand.nextDouble() * 100;
 
         // Très communs (40%)
         if (roll < 40) {
             Material[] commons = {Material.BONE, Material.STICK, Material.FLINT};
-            loot.add(new ItemStack(commons[rand.nextInt(commons.length)]));
+            return new ItemStack(commons[rand.nextInt(commons.length)]);
         }
 
         // Communs (30%)
         if (roll < 70) {
             Material[] semiCommons = {Material.RAW_GOLD, Material.EMERALD, Material.COAL};
-            loot.add(new ItemStack(semiCommons[rand.nextInt(semiCommons.length)]));
+            return new ItemStack(semiCommons[rand.nextInt(semiCommons.length)]);
         }
 
         // Peu communs (15%)
         if (roll < 85 && rand.nextDouble() < 0.5) {
             CustomStack fossil = CustomStack.getInstance("newhorizon:fossil");
-            if (fossil != null) loot.add(fossil.getItemStack());
-
-            CustomStack sherd = CustomStack.getInstance("newhorizon:ceramic_sherd");
-            if (sherd != null) loot.add(sherd.getItemStack());
+            if (fossil != null) return fossil.getItemStack();
         }
 
         // Rares (10%)
         if (roll < 95 && rand.nextDouble() < 0.3) {
             CustomStack relic = CustomStack.getInstance("newhorizon:artisan_relic");
-            if (relic != null) loot.add(relic.getItemStack());
-
-            CustomStack gold = CustomStack.getInstance("newhorizon:deserted_gold");
-            if (gold != null) loot.add(gold.getItemStack());
+            if (relic != null) return relic.getItemStack();
         }
 
         // Très rares (5%)
         if (roll >= 95 && rand.nextDouble() < 0.2) {
             CustomStack sand = CustomStack.getInstance("newhorizon:spiritual_sand");
-            if (sand != null) loot.add(sand.getItemStack());
+            if (sand != null) return sand.getItemStack();
         }
 
-        return loot;
+        return null;
     }
 }

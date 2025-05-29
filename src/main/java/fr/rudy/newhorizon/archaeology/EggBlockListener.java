@@ -28,20 +28,20 @@ public class EggBlockListener implements Listener {
             CustomBlock customBlock = CustomBlock.byAlreadyPlaced(block);
 
             if (customBlock == null) {
-                plugin.getLogger().info("[DEBUG] Aucun CustomBlock détecté même après délai.");
+                //plugin.getLogger().info("[DEBUG] Aucun CustomBlock détecté même après délai.");
                 return;
             }
 
             String id = customBlock.getNamespacedID();
-            plugin.getLogger().info("[DEBUG] Bloc IA détecté après délai : " + id);
+            //plugin.getLogger().info("[DEBUG] Bloc IA détecté après délai : " + id);
 
             if (!id.startsWith("newhorizon:egg_")) return;
 
             if (!manager.isIncubating(block.getLocation())) {
-                plugin.getLogger().info("[DEBUG] Lancement incubation après délai pour : " + id);
+                //plugin.getLogger().info("[DEBUG] Lancement incubation après délai pour : " + id);
                 manager.startIncubation(block);
             } else {
-                plugin.getLogger().info("[DEBUG] Incubation déjà en cours pour : " + id);
+                //plugin.getLogger().info("[DEBUG] Incubation déjà en cours pour : " + id);
             }
         }, 3L); // 2-3 ticks suffisent pour laisser IA finir
     }

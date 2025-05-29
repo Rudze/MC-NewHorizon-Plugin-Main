@@ -1,11 +1,11 @@
 name: NewHorizon
-version: 'v1.11'
+version: 'v1.12'
 main: fr.rudy.newhorizon.Main
 api-version: '1.21'
 prefix: NewHorizon
 author: Rudy
 
-depend: [LuckPerms, Vault]
+depend: [LuckPerms, Vault, ProtocolLib]
 softdepend: ["PlaceholderAPI"]
 
 loadbefore:
@@ -60,10 +60,6 @@ commands:
     usage: /cityadmin <subcommand>
     permission: newhorizon.city.admin
     permission-message: §cVous n'avez pas la permission.
-
-  wiki:
-    description: Ouvre le wiki de GalaxyNetwork
-    usage: /wiki
 
   setspawn:
     description: Définit le spawn du monde

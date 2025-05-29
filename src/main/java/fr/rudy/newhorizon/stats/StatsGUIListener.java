@@ -3,6 +3,8 @@ package fr.rudy.newhorizon.stats;
 import fr.rudy.newhorizon.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Statistic;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,14 +41,19 @@ public class StatsGUIListener implements Listener {
         }
 
         if (displayName.contains("[Récompense] Pierres minées")) {
-            SessionStatManager stats = Main.get().getSessionStatManager();
-            int stone = stats.get(player, "stone_mined");
-
+            int stone = Main.get().getSessionStatManager().get(player, "stone_mined");
             if (stone >= 50000 && !player.hasPermission("stats.stone.50000")) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + player.getName() + " permission set stats.stone.50000");
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "say test");
-                player.sendMessage("§aRécompense pour 50 000 pierres minées reçue !");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + player.getName() + " permission set mcpet.cubee-stone");
+                Bukkit.getScheduler().runTaskLater(Main.get(), () -> Bukkit.dispatchCommand(player, "stats"), 2L);
+            }
+        }
 
+        if (displayName.contains("[Récompense] Squelettes tués")) {
+            int skeletonKills = player.getStatistic(Statistic.KILL_ENTITY, EntityType.SKELETON);
+            if (skeletonKills >= 15000 && !player.hasPermission("stats.kill.15000")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + player.getName() + " permission set stats.kill.15000");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user " + player.getName() + " permission set mcpet.cubee-skeleton");
                 Bukkit.getScheduler().runTaskLater(Main.get(), () -> Bukkit.dispatchCommand(player, "stats"), 2L);
             }
         }

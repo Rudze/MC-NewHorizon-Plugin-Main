@@ -1,5 +1,6 @@
 package fr.rudy.newhorizon;
 
+import fr.rudy.newhorizon.archaeology.*;
 import fr.rudy.newhorizon.chat.Chat;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
@@ -23,6 +24,7 @@ import fr.rudy.newhorizon.ui.CityGUIListener;
 import fr.rudy.newhorizon.ui.MenuItemManager;
 import fr.rudy.newhorizon.ui.NameTagListener;
 import fr.rudy.newhorizon.ui.TablistManager;
+import fr.rudy.newhorizon.utils.DiscordJoinNotifier;
 import fr.rudy.newhorizon.utils.ScheduledTaskManager;
 import fr.rudy.newhorizon.warp.WarpManager;
 import fr.rudy.newhorizon.world.WorldSpawnManager;
@@ -64,6 +66,9 @@ public final class Main extends JavaPlugin implements Listener {
     private CityBankManager cityBankManager;
     private CoreSpawnManager coreSpawnManager;
     private SessionStatManager sessionStatManager;
+    private AnalyzerManager analyzerManager;
+    private IncubatorManager incubatorManager;
+    private EggIncubationManager eggIncubationManager;
 
     private String prefixError;
     private String prefixInfo;
@@ -134,7 +139,6 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("world").setExecutor(new WorldCommand());
         getCommand("city").setExecutor(new CityCommand());
         getCommand("cityadmin").setExecutor(new CityAdminCommand());
-        getCommand("wiki").setExecutor(new WikiCommand());
         getCommand("setspawn").setExecutor(new CommandSpawn());
         getCommand("spawn").setExecutor(new SpawnTeleportCommand());
         getCommand("customitems").setExecutor(new CustomItemsCommand(this));
@@ -215,6 +219,33 @@ public final class Main extends JavaPlugin implements Listener {
                                 "yaw FLOAT NOT NULL, " +
                                 "pitch FLOAT NOT NULL)"
                 );
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS newhorizon_analyzer_blocks (" +
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                "world TEXT NOT NULL, " +
+                                "x INT NOT NULL, " +
+                                "y INT NOT NULL, " +
+                                "z INT NOT NULL, " +
+                                "data TEXT DEFAULT NULL)"
+                );
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS newhorizon_incubator_blocks (" +
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                "world TEXT NOT NULL, " +
+                                "x INT NOT NULL, " +
+                                "y INT NOT NULL, " +
+                                "z INT NOT NULL, " +
+                                "data TEXT DEFAULT NULL)"
+                );
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS newhorizon_egg_blocks (" +
+                                "world TEXT NOT NULL, " +
+                                "x INT NOT NULL, " +
+                                "y INT NOT NULL, " +
+                                "z INT NOT NULL, " +
+                                "stage INT DEFAULT 0, " +
+                                "PRIMARY KEY (world, x, y, z))"
+                );
             }
 
         } catch (SQLException e) {
@@ -238,7 +269,24 @@ public final class Main extends JavaPlugin implements Listener {
         cityBankManager = new CityBankManager();
         worldSpawnManager = new WorldSpawnManager(getDatabase());
         coreSpawnManager = new CoreSpawnManager(database);
+        analyzerManager = new AnalyzerManager(this);
+        incubatorManager = new IncubatorManager(this);
+        eggIncubationManager = new EggIncubationManager(this);
 
+        new EggBlockListener(this, eggIncubationManager);
+        new EggBlockBreakListener(this, eggIncubationManager);
+
+        new AnalyzerBlockListener(this, analyzerManager);
+        new AnalyzerInventoryListener(this, analyzerManager);
+        new AnalyzerInventoryCloseListener(this, analyzerManager);
+
+        new IncubatorBlockListener(this, incubatorManager);
+        new IncubatorInventoryListener(this, incubatorManager);
+        new IncubatorInventoryCloseListener(this, incubatorManager);
+
+        new SuspiciousSandListener(this);
+
+        new DiscordJoinNotifier(this);
 
         // LuckPerms
         LuckPerms luckPerms = getServer().getServicesManager().load(LuckPerms.class);
@@ -288,6 +336,10 @@ public final class Main extends JavaPlugin implements Listener {
                 database.close();
             }
         } catch (SQLException ignored) {}
+
+        if (analyzerManager != null) {
+            analyzerManager.getStorage().close();
+        }
 
         getLogger().info("🛑 Plugin NewHorizon désactivé proprement.");
     }
@@ -339,5 +391,11 @@ public final class Main extends JavaPlugin implements Listener {
 
     public SessionStatManager getSessionStatManager() { return sessionStatManager; }
 
+    public AnalyzerManager getAnalyzerManager() { return analyzerManager; }
+
+    public IncubatorManager getIncubatorManager() { return incubatorManager; }
+
+    public EggIncubationManager getEggIncubationManager() { return eggIncubationManager;
+    }
 
 }

@@ -4,9 +4,11 @@ import fr.rudy.newhorizon.Main;
 import fr.rudy.newhorizon.stats.SessionStatManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Statistic;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -34,21 +36,52 @@ public class StatsCommand implements CommandExecutor {
         // Retour
         gui.setItem(0, createPaperItem("§7Retour", 10077));
 
-        // Stats : Stone
-        boolean hasPerm = player.hasPermission("stats.stone.50000");
+        // Stone
+        boolean hasStone = player.hasPermission("stats.stone.50000");
         int stone = stats.get(player, "stone_mined");
-
-        if (stone >= 50000 && !hasPerm) {
+        if (stone >= 50000 && !hasStone) {
             gui.setItem(1, createPaperItem("§a[Récompense] Pierres minées", 1,
                     "§7Objectif atteint: §f" + stone + " pierres",
                     "",
                     "§eClique pour recevoir ta récompense !"));
-        } else if (hasPerm) {
+        } else if (hasStone) {
             gui.setItem(1, createStoneItem("§fPierres minées ✔", 1,
                     "§7Tu as déjà reçu ta récompense."));
         } else {
             gui.setItem(1, createPaperItem("§fPierres minées", 1,
                     "§7" + stone + " / 50000"));
+        }
+
+        // Skeletons
+        boolean hasSkeleton = player.hasPermission("stats.kill.15000");
+        int kills = player.getStatistic(Statistic.KILL_ENTITY, EntityType.SKELETON);
+        if (kills >= 15000 && !hasSkeleton) {
+            gui.setItem(2, createPaperItem("§a[Récompense] Squelettes tués", 1,
+                    "§7Objectif atteint: §f" + kills + " squelettes",
+                    "",
+                    "§eClique pour recevoir ta récompense !"));
+        } else if (hasSkeleton) {
+            gui.setItem(2, createStoneItem("§fSquelettes tués ✔", 1,
+                    "§7Tu as déjà reçu ta récompense."));
+        } else {
+            gui.setItem(2, createPaperItem("§fSquelettes tués", 1,
+                    "§7" + kills + " / 15000"));
+        }
+
+        // TNT
+        boolean hasTnt = player.hasPermission("stats.tnt.500");
+        int tnt = player.getStatistic(Statistic.USE_ITEM, Material.TNT);
+        if (tnt >= 500 && !hasTnt) {
+            gui.setItem(3, createPaperItem("§a[Récompense] TNT placées", 1,
+                    "§7Objectif atteint: §f" + tnt + " TNT",
+                    "",
+                    "§eClique pour recevoir ta récompense !"));
+        } else if (hasTnt) {
+            gui.setItem(3, createStoneItem("§fTNT placées ✔", 1,
+                    "§7Tu as déjà reçu ta récompense."));
+        } else {
+            gui.setItem(3, createPaperItem("§fTNT placées", 1,
+                    "§7" + tnt + " / 500"));
         }
 
         player.openInventory(gui);

@@ -69,11 +69,35 @@ public class IncubatorTask {
 
     private void finish() {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            CustomStack egg = CustomStack.getInstance("newhorizon:tyrannosaurus_egg");
-            ItemStack result = egg != null ? egg.getItemStack() : new ItemStack(Material.EGG);
+            // Récupération de l'ADN dans l'inventaire
+            Inventory inv = IncubatorManager.getInventoryStatic(location);
+            if (inv == null) return;
+
+            ItemStack input = inv.getItem(11); // Emplacement supposé pour l'ADN
+            if (input == null || input.getType() == Material.AIR) return;
+
+            CustomStack inputStack = CustomStack.byItemStack(input);
+            if (inputStack == null) {
+                resultConsumer.accept(new ItemStack(Material.EGG));
+                return;
+            }
+
+            String inputId = inputStack.getNamespacedID(); // ex: newhorizon:tyrannosaurus_dna
+            if (!inputId.startsWith("newhorizon:") || !inputId.endsWith("_dna")) {
+                resultConsumer.accept(new ItemStack(Material.EGG));
+                return;
+            }
+
+            String dinoName = inputId.replace("newhorizon:", "").replace("_dna", "");
+            String eggId = "newhorizon:egg_" + dinoName + "_item";
+
+            CustomStack resultStack = CustomStack.getInstance(eggId);
+            ItemStack result = resultStack != null ? resultStack.getItemStack() : new ItemStack(Material.EGG);
+
             resultConsumer.accept(result);
         });
     }
+
 
     public void cancel() {
         if (task != null) task.cancel();

@@ -1,5 +1,5 @@
 name: NewHorizon
-version: 'v1.12'
+version: 'v1.13'
 main: fr.rudy.newhorizon.Main
 api-version: '1.21'
 prefix: NewHorizon
@@ -89,6 +89,10 @@ commands:
 
   stats:
     description: Ouvre le menu de statistiques
+
+  archaeologist:
+    description: Ouvrir le menu archéologue
+    usage: /archaeologist open <player>
 
 permissions:
   vip:

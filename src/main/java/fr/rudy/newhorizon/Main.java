@@ -66,7 +66,6 @@ public final class Main extends JavaPlugin implements Listener {
     private CityBankManager cityBankManager;
     private CoreSpawnManager coreSpawnManager;
     private SessionStatManager sessionStatManager;
-    private AnalyzerManager analyzerManager;
     private IncubatorManager incubatorManager;
     private EggIncubationManager eggIncubationManager;
 
@@ -115,6 +114,8 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new PlayerConnectionListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerSessionListener(), this);
         Bukkit.getPluginManager().registerEvents(new StatsGUIListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ArchaeologistListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ArchaeologistCloseListener(), this);
 
         // Stats
         sessionStatManager = new SessionStatManager();
@@ -146,6 +147,8 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("craft").setExecutor(new CraftCommand());
         getCommand("enderchest").setExecutor(new EnderChestCommand());
         getCommand("stats").setExecutor(new StatsCommand());
+        getCommand("archaeologist").setExecutor(new ArchaeologistCommand());
+
 
 
 
@@ -269,16 +272,11 @@ public final class Main extends JavaPlugin implements Listener {
         cityBankManager = new CityBankManager();
         worldSpawnManager = new WorldSpawnManager(getDatabase());
         coreSpawnManager = new CoreSpawnManager(database);
-        analyzerManager = new AnalyzerManager(this);
         incubatorManager = new IncubatorManager(this);
         eggIncubationManager = new EggIncubationManager(this);
 
         new EggBlockListener(this, eggIncubationManager);
         new EggBlockBreakListener(this, eggIncubationManager);
-
-        new AnalyzerBlockListener(this, analyzerManager);
-        new AnalyzerInventoryListener(this, analyzerManager);
-        new AnalyzerInventoryCloseListener(this, analyzerManager);
 
         new IncubatorBlockListener(this, incubatorManager);
         new IncubatorInventoryListener(this, incubatorManager);
@@ -337,10 +335,6 @@ public final class Main extends JavaPlugin implements Listener {
             }
         } catch (SQLException ignored) {}
 
-        if (analyzerManager != null) {
-            analyzerManager.getStorage().close();
-        }
-
         getLogger().info("🛑 Plugin NewHorizon désactivé proprement.");
     }
 
@@ -390,8 +384,6 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     public SessionStatManager getSessionStatManager() { return sessionStatManager; }
-
-    public AnalyzerManager getAnalyzerManager() { return analyzerManager; }
 
     public IncubatorManager getIncubatorManager() { return incubatorManager; }
 

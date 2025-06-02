@@ -13,7 +13,7 @@ import java.net.URL;
 public class DiscordJoinNotifier implements Listener {
 
     //private static final String WEBHOOK_URL = "####";
-    private static final String WEBHOOK_URL = "https://discord.com/api/webhooks/1377715281983443037/wbhb8EwoEzbF662p_4UZcZGJ-aq4e4fpmNtt2DKQn1g8GfkXN0OBVtRt7SdnsGOVAF8T";
+    private static final String WEBHOOK_URL = "https://discord.com/api/webhooks/1379072730963509369/PBqAgxzi92RQEP14sOplT5uJRTaXVSEwycsiCfkiP2pIpSuBcoWyOanBRP6-niCCDJqk";
 
     public DiscordJoinNotifier(Plugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);

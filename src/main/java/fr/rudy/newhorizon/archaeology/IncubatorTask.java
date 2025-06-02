@@ -69,11 +69,10 @@ public class IncubatorTask {
 
     private void finish() {
         Bukkit.getScheduler().runTask(plugin, () -> {
-            // Récupération de l'ADN dans l'inventaire
             Inventory inv = IncubatorManager.getInventoryStatic(location);
             if (inv == null) return;
 
-            ItemStack input = inv.getItem(11); // Emplacement supposé pour l'ADN
+            ItemStack input = inv.getItem(IncubatorManager.INPUT_SLOT.get(0));
             if (input == null || input.getType() == Material.AIR) return;
 
             CustomStack inputStack = CustomStack.byItemStack(input);
@@ -91,9 +90,15 @@ public class IncubatorTask {
             String dinoName = inputId.replace("newhorizon:", "").replace("_dna", "");
             String eggId = "newhorizon:egg_" + dinoName + "_item";
 
-            CustomStack resultStack = CustomStack.getInstance(eggId);
-            ItemStack result = resultStack != null ? resultStack.getItemStack() : new ItemStack(Material.EGG);
+            Bukkit.getLogger().info("[DEBUG] ADN détecté : " + inputId);
+            Bukkit.getLogger().info("[DEBUG] Tentative d'œuf IA : " + eggId);
 
+            CustomStack resultStack = CustomStack.getInstance(eggId);
+            if (resultStack == null) {
+                Bukkit.getLogger().warning("[ERROR] ItemsAdder n’a pas trouvé : " + eggId);
+            }
+
+            ItemStack result = resultStack != null ? resultStack.getItemStack() : new ItemStack(Material.EGG);
             resultConsumer.accept(result);
         });
     }

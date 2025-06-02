@@ -126,7 +126,7 @@ public class EggIncubationManager {
                 incubationLevels.put(loc, level);
                 updateEggStage(loc, level);
             }
-        }.runTaskTimer(plugin, 0, 133);
+        }.runTaskTimer(plugin, 0, 2400);
     }
 
     private void replaceBlock(Location location, String customBlockId) {

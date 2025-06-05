@@ -9,10 +9,7 @@ import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
-import fr.rudy.newhorizon.itemscustom.CustomItems;
-import fr.rudy.newhorizon.itemscustom.FlightPotionListener;
-import fr.rudy.newhorizon.itemscustom.PotionDrinkListener;
-import fr.rudy.newhorizon.itemscustom.WaterskinListener;
+import fr.rudy.newhorizon.itemscustom.*;
 import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
@@ -120,6 +117,8 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new ArchaeologistCloseListener(), this);
         Bukkit.getPluginManager().registerEvents(new PotionDrinkListener(), this);
         Bukkit.getPluginManager().registerEvents(new WaterskinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new RocketBootsListener(this), this);
+
 
         // Stats
         sessionStatManager = new SessionStatManager();

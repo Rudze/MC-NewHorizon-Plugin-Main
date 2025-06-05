@@ -56,6 +56,8 @@ public class RocketBootsListener implements Listener {
     }
 
     private void handleBootsFly(Player player) {
+        if (player.getGameMode() == GameMode.CREATIVE) return;
+
         boolean hasRocketBoots = isWearingRocketBoots(player);
         if (hasRocketBoots) {
             player.setAllowFlight(true);

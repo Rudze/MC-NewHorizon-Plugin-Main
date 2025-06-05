@@ -99,6 +99,10 @@ commands:
     description: Ouvrir le menu archéologue
     usage: /archaeologist open <player>
 
+  bvn:
+    description: Souhaite la bienvenue à un nouveau joueur.
+    usage: /bvn
+
 permissions:
   vip:
     description: Permission pour les commandes VIP

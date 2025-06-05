@@ -2,6 +2,8 @@ package fr.rudy.newhorizon;
 
 import fr.rudy.newhorizon.archaeology.*;
 import fr.rudy.newhorizon.chat.Chat;
+import fr.rudy.newhorizon.chat.NewPlayerListener;
+import fr.rudy.newhorizon.chat.WelcomeManager;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
 import fr.rudy.newhorizon.core.PlayerConnectionListener;
@@ -67,6 +69,7 @@ public final class Main extends JavaPlugin implements Listener {
     private SessionStatManager sessionStatManager;
     private IncubatorManager incubatorManager;
     private EggIncubationManager eggIncubationManager;
+    private WelcomeManager welcomeManager;
 
     private String prefixError;
     private String prefixInfo;
@@ -118,6 +121,7 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new PotionDrinkListener(), this);
         Bukkit.getPluginManager().registerEvents(new WaterskinListener(), this);
         Bukkit.getPluginManager().registerEvents(new RocketBootsListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new NewPlayerListener(welcomeManager), this);
 
 
         // Stats
@@ -152,9 +156,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("enderchest").setExecutor(new EnderChestCommand());
         getCommand("stats").setExecutor(new StatsCommand());
         getCommand("archaeologist").setExecutor(new ArchaeologistCommand());
-
-
-
+        getCommand("bvn").setExecutor(new WelcomeCommand(this, welcomeManager));
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
@@ -289,6 +291,7 @@ public final class Main extends JavaPlugin implements Listener {
         coreSpawnManager = new CoreSpawnManager(database);
         incubatorManager = new IncubatorManager(this);
         eggIncubationManager = new EggIncubationManager(this);
+        welcomeManager = new WelcomeManager();
 
 
         new EggBlockListener(this, eggIncubationManager);
@@ -403,7 +406,9 @@ public final class Main extends JavaPlugin implements Listener {
 
     public IncubatorManager getIncubatorManager() { return incubatorManager; }
 
-    public EggIncubationManager getEggIncubationManager() { return eggIncubationManager;
-    }
+    public EggIncubationManager getEggIncubationManager() { return eggIncubationManager; }
+
+    public WelcomeManager getWelcomeManager() { return welcomeManager; }
+
 
 }

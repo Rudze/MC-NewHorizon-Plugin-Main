@@ -139,6 +139,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("sethome").setExecutor(new HomeCommand());
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("warp").setExecutor(new WarpCommand(warpManager));
+        getCommand("setwarp").setExecutor(new SetWarpCommand(warpManager));
         getCommand("coins").setExecutor(new CoinsCommand(economyManager));
         getCommand("world").setExecutor(new WorldCommand());
         getCommand("city").setExecutor(new CityCommand());
@@ -188,6 +189,17 @@ public final class Main extends JavaPlugin implements Listener {
                         "CREATE TABLE IF NOT EXISTS newhorizon_world_spawns (" +
                                 "world_name VARCHAR(64) PRIMARY KEY, " +
                                 "x DOUBLE, y DOUBLE, z DOUBLE, yaw FLOAT, pitch FLOAT)"
+                );
+
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS newhorizon_warps (" +
+                                "name TEXT PRIMARY KEY, " +
+                                "world TEXT NOT NULL, " +
+                                "x DOUBLE NOT NULL, " +
+                                "y DOUBLE NOT NULL, " +
+                                "z DOUBLE NOT NULL, " +
+                                "yaw FLOAT NOT NULL, " +
+                                "pitch FLOAT NOT NULL)"
                 );
 
                 statement.executeUpdate(
@@ -267,7 +279,7 @@ public final class Main extends JavaPlugin implements Listener {
         homesManager = new HomesManager();
         levelsManager = new LevelsManager();
         warpManager = new WarpManager();
-        warpManager.loadWarpsFromConfig();
+        warpManager.loadWarpsFromDatabase();
         worldSpawnManager = new WorldSpawnManager(database);
         cityManager = new CityManager();
         claimManager = new ClaimManager();
@@ -277,6 +289,7 @@ public final class Main extends JavaPlugin implements Listener {
         coreSpawnManager = new CoreSpawnManager(database);
         incubatorManager = new IncubatorManager(this);
         eggIncubationManager = new EggIncubationManager(this);
+
 
         new EggBlockListener(this, eggIncubationManager);
         new EggBlockBreakListener(this, eggIncubationManager);

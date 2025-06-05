@@ -47,10 +47,10 @@ public class PlayerListener implements Listener {
 
         if (destination == World.Environment.NETHER && !player.hasPermission("lvl.20")) {
             event.setCancelled(true);
-            player.sendMessage(Main.get().getPrefixError() + "§cTu dois avoir la permission §elvl.20 §cpour entrer dans le Nether.");
+            player.sendMessage(Main.get().getPrefixError() + "Vous devez être niveau 20 §cpour accéder au Nether.");
         } else if (destination == World.Environment.THE_END && !player.hasPermission("lvl.40")) {
             event.setCancelled(true);
-            player.sendMessage(Main.get().getPrefixError() + "§cTu dois avoir la permission §elvl.40 §cpour entrer dans l'End.");
+            player.sendMessage(Main.get().getPrefixError() + "Vous devez être niveau 40 pour accéder à l'End.");
         }
     }
 }

@@ -41,6 +41,11 @@ commands:
     permission: newhorizon.warp
     permission-message: Vous n'avez pas la permission d'utiliser cette commande.
 
+  setwarp:
+    description: Définit un warp
+    usage: /setwarp <nom>
+    permission: newhorizon.setwarp
+
   coins:
     description: Gère l'argent des joueurs.
     usage: "/coins ou /coins set <joueur> <montant>"

@@ -57,9 +57,14 @@ public class RocketBootsListener implements Listener {
 
     private void handleBootsFly(Player player) {
         boolean hasRocketBoots = isWearingRocketBoots(player);
-        player.setAllowFlight(hasRocketBoots);
-        if (!hasRocketBoots && player.isFlying()) {
-            player.setFlying(false);
+        if (hasRocketBoots) {
+            player.setAllowFlight(true);
+        } else {
+            player.setAllowFlight(false);
+            if (player.isFlying()) {
+                player.setFlying(false);
+            }
+            flyingPlayers.remove(player.getUniqueId());
         }
     }
 
@@ -104,43 +109,53 @@ public class RocketBootsListener implements Listener {
                     }
 
                     ItemStack boots = player.getInventory().getBoots();
-                    if (boots == null || !boots.hasItemMeta()) continue;
+                    if (boots == null || !boots.hasItemMeta()) {
+                        player.setFlying(false);
+                        player.setAllowFlight(false);
+                        flyingPlayers.remove(uuid);
+                        continue;
+                    }
 
                     CustomStack custom = CustomStack.byItemStack(boots);
-                    if (custom == null || !custom.getNamespacedID().equals(ROCKET_BOOTS_ID)) continue;
+                    if (custom == null || !custom.getNamespacedID().equals(ROCKET_BOOTS_ID)) {
+                        player.setFlying(false);
+                        player.setAllowFlight(false);
+                        flyingPlayers.remove(uuid);
+                        continue;
+                    }
 
                     ItemMeta meta = boots.getItemMeta();
-                    if (!(meta instanceof Damageable damageable)) continue;
+                    if (!(meta instanceof Damageable damageable)) {
+                        player.setFlying(false);
+                        player.setAllowFlight(false);
+                        flyingPlayers.remove(uuid);
+                        continue;
+                    }
 
                     int maxDurability = boots.getType().getMaxDurability();
                     int currentDamage = damageable.getDamage();
 
-// Si les bottes sont à leur limite, on stoppe
-                    if (currentDamage >= maxDurability - 1) {
+                    if (currentDamage >= maxDurability) {
                         player.setFlying(false);
                         player.setAllowFlight(false);
                         flyingPlayers.remove(uuid);
-                        player.sendMessage(ChatColor.RED + "§c⚠ Vos Rocket Boots sont cassées !");
+                        //player.sendMessage(ChatColor.RED + "⚠ Vos Rocket Boots sont cassées !");
                         continue;
                     }
 
-// Sinon, on applique les dégâts
                     try {
                         damageable.setDamage(currentDamage + 1);
                         boots.setItemMeta(meta);
                         player.getInventory().setBoots(boots);
                         player.updateInventory();
                     } catch (IllegalArgumentException e) {
-                        // Sécurité ultime : on log et on désactive le vol
                         player.setFlying(false);
                         player.setAllowFlight(false);
                         flyingPlayers.remove(uuid);
-                        //plugin.getLogger().warning("RocketBoots: tentative de dépasser la durabilité max pour " + player.getName());
                     }
-
                 }
             }
-        }.runTaskTimer(plugin, 20L, 20L);
+        }.runTaskTimer(plugin, 0L, 100L);
     }
 
     private boolean isWearingRocketBoots(Player player) {
@@ -152,7 +167,7 @@ public class RocketBootsListener implements Listener {
 
         ItemMeta meta = boots.getItemMeta();
         if (meta instanceof Damageable damageable) {
-            return damageable.getDamage() < boots.getType().getMaxDurability() - 1;
+            return damageable.getDamage() < boots.getType().getMaxDurability();
         }
 
         return true;

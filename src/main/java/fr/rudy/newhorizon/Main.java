@@ -157,6 +157,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("stats").setExecutor(new StatsCommand());
         getCommand("archaeologist").setExecutor(new ArchaeologistCommand());
         getCommand("bvn").setExecutor(new WelcomeCommand(this, welcomeManager));
+        getCommand("audio").setExecutor(new AudioCommand(this));
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");

@@ -103,6 +103,10 @@ commands:
     description: Souhaite la bienvenue à un nouveau joueur.
     usage: /bvn
 
+  audio:
+    description: Lien pour le mod de chat vocal.
+    usage: /audio
+
 permissions:
   vip:
     description: Permission pour les commandes VIP

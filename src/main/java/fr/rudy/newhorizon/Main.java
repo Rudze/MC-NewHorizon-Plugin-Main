@@ -6,14 +6,14 @@ import fr.rudy.newhorizon.chat.NewPlayerListener;
 import fr.rudy.newhorizon.chat.WelcomeManager;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
-import fr.rudy.newhorizon.core.PlayerConnectionListener;
-import fr.rudy.newhorizon.economy.EconomyManager;
+import fr.rudy.newhorizon.core.PlayerConnectionListener;import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
 import fr.rudy.newhorizon.itemscustom.*;
 import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
+import fr.rudy.newhorizon.loot.VaultLootListener;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
 import fr.rudy.newhorizon.spawn.CoreSpawnManager;
 import fr.rudy.newhorizon.spawn.JoinSpawnListener;
@@ -122,6 +122,7 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new WaterskinListener(), this);
         Bukkit.getPluginManager().registerEvents(new RocketBootsListener(this), this);
         Bukkit.getPluginManager().registerEvents(new NewPlayerListener(welcomeManager), this);
+        Bukkit.getPluginManager().registerEvents(new VaultLootListener(), this);
 
 
         // Stats
@@ -158,6 +159,8 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("archaeologist").setExecutor(new ArchaeologistCommand());
         getCommand("bvn").setExecutor(new WelcomeCommand(this, welcomeManager));
         getCommand("audio").setExecutor(new AudioCommand(this));
+        getCommand("dialogue").setExecutor(new DialogueCommand());
+
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");

@@ -20,7 +20,7 @@ public class AudioCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         String prefix = plugin.getPrefixInfo();
 
-        TextComponent message = new TextComponent(prefix + "Pour utiliser le chat vocal, installe le mod en cliquant ");
+        TextComponent message = new TextComponent("&f\uE01F&b Pour utiliser le chat vocal, installe le mod en cliquant ");
         TextComponent ici = new TextComponent("§n§lici");
         ici.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
                 "https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/files/all?page=1&pageSize=20"));
@@ -29,7 +29,7 @@ public class AudioCommand implements CommandExecutor {
         if (sender instanceof Player player) {
             player.spigot().sendMessage(message);
         } else {
-            sender.sendMessage(prefix + "🔊 Pour utiliser le chat vocal : https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/files");
+            sender.sendMessage(prefix + "&f\uE01F&b Pour utiliser le chat vocal : https://www.curseforge.com/minecraft/mc-mods/plasmo-voice/files");
         }
 
         return true;

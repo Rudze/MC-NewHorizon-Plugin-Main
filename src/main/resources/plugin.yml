@@ -107,6 +107,10 @@ commands:
     description: Lien pour le mod de chat vocal.
     usage: /audio
 
+  dialogue:
+    description: Lance un dialogue avec un NPC
+    usage: /dialogue <npc> <étape>
+
 permissions:
   vip:
     description: Permission pour les commandes VIP

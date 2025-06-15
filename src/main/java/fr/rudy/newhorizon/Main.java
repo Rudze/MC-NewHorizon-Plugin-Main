@@ -1,9 +1,7 @@
 package fr.rudy.newhorizon;
 
 import fr.rudy.newhorizon.archaeology.*;
-import fr.rudy.newhorizon.chat.Chat;
-import fr.rudy.newhorizon.chat.NewPlayerListener;
-import fr.rudy.newhorizon.chat.WelcomeManager;
+import fr.rudy.newhorizon.chat.*;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
 import fr.rudy.newhorizon.core.PlayerConnectionListener;import fr.rudy.newhorizon.economy.EconomyManager;
@@ -123,6 +121,7 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new RocketBootsListener(this), this);
         Bukkit.getPluginManager().registerEvents(new NewPlayerListener(welcomeManager), this);
         Bukkit.getPluginManager().registerEvents(new VaultLootListener(), this);
+        Bukkit.getPluginManager().registerEvents(new CommandVisibilityListener(), this);
 
 
         // Stats
@@ -133,6 +132,8 @@ public final class Main extends JavaPlugin implements Listener {
             tablistManager = new TablistManager(this);
             tablistManager.start();
         }
+
+        CommandTabCompleter tabCompleter = new CommandTabCompleter();
 
         // Commandes
         getCommand("level").setExecutor(new LevelCommand());

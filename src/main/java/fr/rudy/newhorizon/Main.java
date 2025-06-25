@@ -4,7 +4,9 @@ import fr.rudy.newhorizon.archaeology.*;
 import fr.rudy.newhorizon.chat.*;
 import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
-import fr.rudy.newhorizon.core.PlayerConnectionListener;import fr.rudy.newhorizon.economy.EconomyManager;
+import fr.rudy.newhorizon.core.PlayerConnectionListener;
+import fr.rudy.newhorizon.core.PlayerDisconnectListener;
+import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
 import fr.rudy.newhorizon.home.HomesManager;
@@ -12,7 +14,15 @@ import fr.rudy.newhorizon.itemscustom.*;
 import fr.rudy.newhorizon.level.LevelsManager;
 import fr.rudy.newhorizon.level.PlayerListener;
 import fr.rudy.newhorizon.loot.VaultLootListener;
+import fr.rudy.newhorizon.friend.FriendCommand;
+import fr.rudy.newhorizon.friend.FriendManager;
+import fr.rudy.newhorizon.party.PartyCommand;
+import fr.rudy.newhorizon.party.PartyManager;
+import fr.rudy.newhorizon.party.PartyMenu;
 import fr.rudy.newhorizon.placeholders.NewHorizonPlaceholder;
+import fr.rudy.newhorizon.profile.ProfileClickListener;
+import fr.rudy.newhorizon.profile.ProfileCommand;
+import fr.rudy.newhorizon.profile.ProfileManager;
 import fr.rudy.newhorizon.spawn.CoreSpawnManager;
 import fr.rudy.newhorizon.spawn.JoinSpawnListener;
 import fr.rudy.newhorizon.stats.PlayerSessionListener;
@@ -68,9 +78,14 @@ public final class Main extends JavaPlugin implements Listener {
     private IncubatorManager incubatorManager;
     private EggIncubationManager eggIncubationManager;
     private WelcomeManager welcomeManager;
+    private FriendManager friendManager;
+    private PartyManager partyManager;
+    private Economy economy;
+    private PartyMenu partyMenu;
 
     private String prefixError;
     private String prefixInfo;
+    private ProfileManager profileManager;
 
     private final Map<UUID, String> pendingInvites = new HashMap<>();
     public Map<UUID, String> getPendingInvites() {
@@ -122,6 +137,9 @@ public final class Main extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new NewPlayerListener(welcomeManager), this);
         Bukkit.getPluginManager().registerEvents(new VaultLootListener(), this);
         Bukkit.getPluginManager().registerEvents(new CommandVisibilityListener(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockedNamespacedCommandListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ProfileClickListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerDisconnectListener(), this);
 
 
         // Stats
@@ -161,7 +179,9 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("bvn").setExecutor(new WelcomeCommand(this, welcomeManager));
         getCommand("audio").setExecutor(new AudioCommand(this));
         getCommand("dialogue").setExecutor(new DialogueCommand());
-
+        getCommand("friend").setExecutor(new FriendCommand(friendManager));
+        getCommand("party").setExecutor(new PartyCommand(partyManager, partyMenu));
+        getCommand("profile").setExecutor(new ProfileCommand());
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
@@ -195,82 +215,52 @@ public final class Main extends JavaPlugin implements Listener {
                 statement.executeUpdate(
                         "CREATE TABLE IF NOT EXISTS newhorizon_world_spawns (" +
                                 "world_name VARCHAR(64) PRIMARY KEY, " +
-                                "x DOUBLE, y DOUBLE, z DOUBLE, yaw FLOAT, pitch FLOAT)"
-                );
+                                "x DOUBLE, y DOUBLE, z DOUBLE, yaw FLOAT, pitch FLOAT)");
 
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_warps (" +
-                                "name TEXT PRIMARY KEY, " +
-                                "world TEXT NOT NULL, " +
-                                "x DOUBLE NOT NULL, " +
-                                "y DOUBLE NOT NULL, " +
-                                "z DOUBLE NOT NULL, " +
-                                "yaw FLOAT NOT NULL, " +
-                                "pitch FLOAT NOT NULL)"
-                );
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_warps (" +
+                        "name TEXT PRIMARY KEY, " +
+                        "world TEXT NOT NULL, " +
+                        "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "yaw FLOAT NOT NULL, pitch FLOAT NOT NULL)");
 
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_cities (" +
-                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                "owner_uuid TEXT NOT NULL, " +
-                                "city_name TEXT UNIQUE NOT NULL, " +
-                                "world TEXT NOT NULL, " +
-                                "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
-                                "yaw FLOAT, pitch FLOAT, " +
-                                "likes INTEGER DEFAULT 0, " +
-                                "liked_by TEXT DEFAULT '', " +
-                                "members TEXT DEFAULT '', " +
-                                "banner TEXT, " +
-                                "bank_balance DOUBLE DEFAULT 0.0" +
-                                ")"
-                );
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_cities (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "owner_uuid TEXT NOT NULL, " +
+                        "city_name TEXT UNIQUE NOT NULL, " +
+                        "world TEXT NOT NULL, x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "yaw FLOAT, pitch FLOAT, likes INTEGER DEFAULT 0, " +
+                        "liked_by TEXT DEFAULT '', members TEXT DEFAULT '', " +
+                        "banner TEXT, bank_balance DOUBLE DEFAULT 0.0)");
 
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_city_claims (" +
+                        "chunk_x INTEGER NOT NULL, chunk_z INTEGER NOT NULL, " +
+                        "world TEXT NOT NULL, city_id INTEGER NOT NULL, " +
+                        "PRIMARY KEY (chunk_x, chunk_z, world))");
 
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_city_claims (" +
-                                "chunk_x INTEGER NOT NULL, " +
-                                "chunk_z INTEGER NOT NULL, " +
-                                "world TEXT NOT NULL, " +
-                                "city_id INTEGER NOT NULL, " +
-                                "PRIMARY KEY (chunk_x, chunk_z, world))"
-                );
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_core_spawn (" +
-                                "id INTEGER PRIMARY KEY CHECK (id = 0), " +
-                                "world TEXT NOT NULL, " +
-                                "x DOUBLE NOT NULL, " +
-                                "y DOUBLE NOT NULL, " +
-                                "z DOUBLE NOT NULL, " +
-                                "yaw FLOAT NOT NULL, " +
-                                "pitch FLOAT NOT NULL)"
-                );
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_analyzer_blocks (" +
-                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                "world TEXT NOT NULL, " +
-                                "x INT NOT NULL, " +
-                                "y INT NOT NULL, " +
-                                "z INT NOT NULL, " +
-                                "data TEXT DEFAULT NULL)"
-                );
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_incubator_blocks (" +
-                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                "world TEXT NOT NULL, " +
-                                "x INT NOT NULL, " +
-                                "y INT NOT NULL, " +
-                                "z INT NOT NULL, " +
-                                "data TEXT DEFAULT NULL)"
-                );
-                statement.executeUpdate(
-                        "CREATE TABLE IF NOT EXISTS newhorizon_egg_blocks (" +
-                                "world TEXT NOT NULL, " +
-                                "x INT NOT NULL, " +
-                                "y INT NOT NULL, " +
-                                "z INT NOT NULL, " +
-                                "stage INT DEFAULT 0, " +
-                                "PRIMARY KEY (world, x, y, z))"
-                );
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_core_spawn (" +
+                        "id INTEGER PRIMARY KEY CHECK (id = 0), world TEXT NOT NULL, " +
+                        "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "yaw FLOAT NOT NULL, pitch FLOAT NOT NULL)");
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_analyzer_blocks (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, world TEXT NOT NULL, " +
+                        "x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, data TEXT DEFAULT NULL)");
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_incubator_blocks (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, world TEXT NOT NULL, " +
+                        "x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, data TEXT DEFAULT NULL)");
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_egg_blocks (" +
+                        "world TEXT NOT NULL, x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, " +
+                        "stage INT DEFAULT 0, PRIMARY KEY (world, x, y, z))");
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_friends (" +
+                        "player_uuid TEXT NOT NULL, friend_uuid TEXT NOT NULL, " +
+                        "PRIMARY KEY (player_uuid, friend_uuid))");
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS newhorizon_friend_requests (" +
+                        "sender_uuid TEXT NOT NULL, receiver_uuid TEXT NOT NULL, " +
+                        "PRIMARY KEY (sender_uuid, receiver_uuid))");
             }
 
         } catch (SQLException e) {
@@ -278,6 +268,7 @@ public final class Main extends JavaPlugin implements Listener {
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
+
 
     private void setupManagers() {
         economyManager = new EconomyManager(database);
@@ -297,7 +288,14 @@ public final class Main extends JavaPlugin implements Listener {
         incubatorManager = new IncubatorManager(this);
         eggIncubationManager = new EggIncubationManager(this);
         welcomeManager = new WelcomeManager();
+        friendManager = new FriendManager(getDatabase());
+        partyManager = new PartyManager(this);
+        partyMenu = new PartyMenu(partyManager);
+        profileManager = new ProfileManager();
 
+
+
+        profileManager.register();
 
         new EggBlockListener(this, eggIncubationManager);
         new EggBlockBreakListener(this, eggIncubationManager);
@@ -339,9 +337,10 @@ public final class Main extends JavaPlugin implements Listener {
 
     private void setupVault() {
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            this.economy = new VaultEconomy(economyManager);
             getServer().getServicesManager().register(
                     Economy.class,
-                    new VaultEconomy(economyManager),
+                    this.economy,
                     this,
                     ServicePriority.Normal
             );
@@ -350,6 +349,7 @@ public final class Main extends JavaPlugin implements Listener {
             getLogger().warning("⚠️ Vault manquant !");
         }
     }
+
 
     @Override
     public void onDisable() {
@@ -407,13 +407,36 @@ public final class Main extends JavaPlugin implements Listener {
         return coreSpawnManager;
     }
 
-    public SessionStatManager getSessionStatManager() { return sessionStatManager; }
+    public FriendManager getFriendManager() {
+        return friendManager;
+    }
 
-    public IncubatorManager getIncubatorManager() { return incubatorManager; }
+    public SessionStatManager getSessionStatManager() {
+        return sessionStatManager;
+    }
 
-    public EggIncubationManager getEggIncubationManager() { return eggIncubationManager; }
+    public IncubatorManager getIncubatorManager() {
+        return incubatorManager;
+    }
 
-    public WelcomeManager getWelcomeManager() { return welcomeManager; }
+    public EggIncubationManager getEggIncubationManager() {
+        return eggIncubationManager;
+    }
 
+    public WelcomeManager getWelcomeManager() {
+        return welcomeManager;
+    }
+
+    public ProfileManager getProfileManager() {
+        return profileManager;
+    }
+
+    public Economy getEconomy() {
+        return this.economy;
+    }
+
+    public PartyMenu getPartyMenu() {
+        return partyMenu;
+    }
 
 }

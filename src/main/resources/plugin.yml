@@ -111,6 +111,18 @@ commands:
     description: Lance un dialogue avec un NPC
     usage: /dialogue <npc> <étape>
 
+  friend:
+    description: Gérer vos amis
+
+  party:
+    description: Gérer les parties
+
+  profile:
+    description: Ouvre le menu de profil d'un joueur.
+    usage: /profile [joueur]
+    permission: newhorizon.profile.use # Permission requise pour utiliser la commande
+    permission-message: Vous n'avez pas la permission d'utiliser cette commande !
+
 permissions:
   vip:
     description: Permission pour les commandes VIP

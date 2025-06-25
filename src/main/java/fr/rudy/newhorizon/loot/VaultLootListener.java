@@ -1,11 +1,5 @@
 package fr.rudy.newhorizon.loot;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 import dev.lone.itemsadder.api.CustomStack;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,6 +14,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.Registry;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World; // Ajout de l'import pour World
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,24 +30,34 @@ public class VaultLootListener implements Listener {
     private final Random random = new Random();
 
     // Probabilités des items rares/spéciaux (0.0 à 1.0)
-    private static final double CURSED_BONES_CHANCE = 0.10; // 10% de chance (légèrement réduit pour plus de diversité)
-    private static final double WITHER_SKULL_CHANCE = 0.03; // 3% de chance
-    private static final double VAULT_KEY_CHANCE = 0.07; // 7% de chance de "rembourser" la clé (si la clé est un CustomStack "newhorizon:vault_key")
+    private static final double SACRED_PIECE_OF_JUNGLE_CHANCE = 0.10;
+    private static final double WITHER_SKULL_CHANCE = 0.03;
+    private static final double VAULT_KEY_CHANCE = 0.07;
+
+    // --- CHANGEMENT ICI ---
+    // Changez ce préfixe pour qu'il corresponde au début des noms de vos mondes de donjon
+    private static final String DUNGEON_WORLD_PREFIX = "dungeon_normal_temple_";// Nouveau préfixe
+    // Si vous avez plusieurs types de donjons, vous devrez étendre cette logique (voir la note ci-dessous)
+    // --- FIN DU CHANGEMENT ---
 
     @EventHandler
     public void onVaultLoot(BlockDispenseLootEvent event) {
         Block block = event.getBlock();
-        Player player = event.getPlayer();
+        // Player player = event.getPlayer(); // Le joueur qui ouvre la vault, utile pour le contexte, mais non utilisé ici pour la logique de monde
         if (!(block.getState() instanceof Vault)) return;
 
-        if (isInRegion(player, "dungeon_normal_skeleton")) {
+        World world = block.getWorld();
+        String worldName = world.getName();
+
+        // Vérifier si le nom du monde commence par le préfixe désiré
+        if (worldName.startsWith(DUNGEON_WORLD_PREFIX)) { // Utilisation du nouveau préfixe
             List<ItemStack> possibleLootItems = new ArrayList<>();
 
             // Tenter d'ajouter les items spéciaux avec leur probabilité
-            if (random.nextDouble() < CURSED_BONES_CHANCE) {
-                CustomStack cursedBones = CustomStack.getInstance("newhorizon:cursed_bones");
-                if (cursedBones != null) {
-                    possibleLootItems.add(cursedBones.getItemStack());
+            if (random.nextDouble() < SACRED_PIECE_OF_JUNGLE_CHANCE) {
+                CustomStack sacredpieceofjungle = CustomStack.getInstance("newhorizon:sacred_piece_of_jungle");
+                if (sacredpieceofjungle != null) {
+                    possibleLootItems.add(sacredpieceofjungle.getItemStack());
                 }
             }
 
@@ -60,34 +65,24 @@ public class VaultLootListener implements Listener {
                 possibleLootItems.add(new ItemStack(Material.WITHER_SKELETON_SKULL));
             }
 
-            if (random.nextDouble() < VAULT_KEY_CHANCE) {
-                CustomStack vaultKey = CustomStack.getInstance("newhorizon:vault_key"); // Assurez-vous que c'est le bon ID pour votre clé
-                if (vaultKey != null) {
-                    possibleLootItems.add(vaultKey.getItemStack());
-                }
-            }
-
             // Ajout d'items de remplissage classiques avec probabilités
-            // (Ces probabilités sont relatives entre elles dans cette section)
             Map<ItemStack, Double> fillerItemsChances = new HashMap<>();
-            fillerItemsChances.put(new ItemStack(Material.BONE, 8 + random.nextInt(8)), 0.60); // Très commun
-            fillerItemsChances.put(new ItemStack(Material.COBBLESTONE, 32 + random.nextInt(32)), 0.50); // Commun
-            fillerItemsChances.put(new ItemStack(Material.EXPERIENCE_BOTTLE, 4 + random.nextInt(8)), 0.40); // Assez commun
-            fillerItemsChances.put(new ItemStack(Material.DIRT, 16 + random.nextInt(16)), 0.30); // Simple
-            fillerItemsChances.put(new ItemStack(Material.APPLE, 2 + random.nextInt(4)), 0.25); // Fruit
-            fillerItemsChances.put(new ItemStack(Material.TORCH, 8 + random.nextInt(16)), 0.20); // Lumière
-            fillerItemsChances.put(new ItemStack(Material.BAKED_POTATO, 4 + random.nextInt(8)), 0.15); // Nourriture
-            fillerItemsChances.put(new ItemStack(Material.IRON_INGOT, 1 + random.nextInt(3)), 0.10); // Ressource basique
-            fillerItemsChances.put(new ItemStack(Material.GOLDEN_APPLE), 0.05); // Pomme d'or (rare)
-            fillerItemsChances.put(new ItemStack(Material.DIAMOND), 0.02); // Diamant (très rare)
+            fillerItemsChances.put(new ItemStack(Material.BONE, 8 + random.nextInt(8)), 0.60);
+            fillerItemsChances.put(new ItemStack(Material.COBBLESTONE, 32 + random.nextInt(32)), 0.50);
+            fillerItemsChances.put(new ItemStack(Material.EXPERIENCE_BOTTLE, 4 + random.nextInt(8)), 0.40);
+            fillerItemsChances.put(new ItemStack(Material.DIRT, 16 + random.nextInt(16)), 0.30);
+            fillerItemsChances.put(new ItemStack(Material.APPLE, 2 + random.nextInt(4)), 0.25);
+            fillerItemsChances.put(new ItemStack(Material.TORCH, 8 + random.nextInt(16)), 0.20);
+            fillerItemsChances.put(new ItemStack(Material.BAKED_POTATO, 4 + random.nextInt(8)), 0.15);
+            fillerItemsChances.put(new ItemStack(Material.IRON_INGOT, 1 + random.nextInt(3)), 0.10);
+            fillerItemsChances.put(new ItemStack(Material.GOLDEN_APPLE), 0.05);
+            fillerItemsChances.put(new ItemStack(Material.DIAMOND), 0.02);
 
-            // Ajouter les items de remplissage en fonction de leurs probabilités
             for (Map.Entry<ItemStack, Double> entry : fillerItemsChances.entrySet()) {
-                if (random.nextDouble() < entry.getValue()) { // Chaque item a sa chance indépendante
+                if (random.nextDouble() < entry.getValue()) {
                     possibleLootItems.add(entry.getKey());
                 }
             }
-
 
             // Génération d'une armure et d'un outil aléatoires
             ItemStack randomArmor = generateRandomArmor();
@@ -101,7 +96,7 @@ public class VaultLootListener implements Listener {
             }
 
             // Déterminer le nombre de drops réel (entre 2 et 5)
-            int numberOfDrops = 2 + random.nextInt(4); // Génère 0, 1, 2, 3 -> 2, 3, 4, 5 drops
+            int numberOfDrops = 2 + random.nextInt(4);
             List<ItemStack> finalLoot = new ArrayList<>();
 
             // Mélanger la liste de tous les items possibles et prendre les X premiers
@@ -126,7 +121,7 @@ public class VaultLootListener implements Listener {
         armorChances.put(Material.GOLDEN_LEGGINGS, 0.10);
         armorChances.put(Material.GOLDEN_BOOTS, 0.10);
 
-        armorChances.put(Material.IRON_HELMET, 0.25); // L'augmentation des chances ici
+        armorChances.put(Material.IRON_HELMET, 0.25);
         armorChances.put(Material.IRON_CHESTPLATE, 0.25);
         armorChances.put(Material.IRON_LEGGINGS, 0.25);
         armorChances.put(Material.IRON_BOOTS, 0.25);
@@ -280,7 +275,7 @@ public class VaultLootListener implements Listener {
             }
 
             if (canAdd) {
-                int level = 1 + random.nextInt(Math.min(chosenEnchantment.getMaxLevel(), 5));
+                int level = 1 + random.nextInt(chosenEnchantment.getMaxLevel());
                 meta.addEnchant(chosenEnchantment, level, true);
             }
             availableEnchantments.remove(chosenEnchantment);
@@ -296,19 +291,5 @@ public class VaultLootListener implements Listener {
                 damageableMeta.setDamage(damage);
             }
         }
-    }
-
-    private boolean isInRegion(Player player, String regionId) {
-        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-        RegionManager manager = container.get(BukkitAdapter.adapt(player.getWorld()));
-        if (manager == null) return false;
-
-        ApplicableRegionSet regions = manager.getApplicableRegions(BukkitAdapter.asBlockVector(player.getLocation()));
-        for (ProtectedRegion region : regions) {
-            if (region.getId().equalsIgnoreCase(regionId)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

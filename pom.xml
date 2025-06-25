@@ -80,6 +80,26 @@
             <id>enginehub</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>aestrus-releases</id>
+            <name>Aestrus's Repository</name>
+            <url>https://maven.aestrus.io/releases</url>
+        </repository>
+        <repository>
+            <id>hmc-repo-releases</id>
+            <name>HibiscusMC Repository</name>
+            <url>https://repo.hibiscusmc.com/releases</url>
+        </repository>
+        <repository>
+            <id>dev.triumphteam</id>
+            <name>Triumph GUI</name>
+            <url>https://repo.triumphteam.dev/snapshots</url>
+        </repository>
+        <repository>
+            <id>com.ticxo.playeranimator</id>
+            <name>PlayerAnimator</name>
+            <url>https://mvn.lumine.io/repository/maven/</url>
+        </repository>
     </repositories>
 
 
@@ -136,5 +156,35 @@
             <version>7.0.13</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- MythicDungeons -->
+        <dependency>
+            <groupId>net.playavalon</groupId>
+            <artifactId>MythicDungeons</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- HMCCosmetics -->
+        <dependency>
+            <groupId>com.hibiscusmc</groupId>
+            <artifactId>HMCCosmetics</artifactId>
+            <version>2.7.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.triumphteam</groupId>
+            <artifactId>triumph-gui</artifactId>
+            <version>3.2.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ticxo.playeranimator</groupId>
+            <artifactId>PlayerAnimator</artifactId>
+            <version>R1.2.7</version>
+        </dependency>
+
+
     </dependencies>
 </project>

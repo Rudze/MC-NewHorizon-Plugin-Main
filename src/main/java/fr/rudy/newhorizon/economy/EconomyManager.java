@@ -31,7 +31,7 @@ public class EconomyManager {
             statement.setString(1, player.toString());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getDouble("money"); // <-- ici
+                return resultSet.getDouble("money");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,11 +43,16 @@ public class EconomyManager {
         try (PreparedStatement statement = database.prepareStatement(
                 "UPDATE newhorizon_player_data SET money = ? WHERE uuid = ?;"
         )) {
-            statement.setDouble(1, amount); // <-- ici
+            statement.setDouble(1, amount);
             statement.setString(2, player.toString());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addMoney(UUID player, double amount) {
+        double current = getMoney(player);
+        setMoney(player, current + amount);
     }
 }

@@ -4,6 +4,9 @@ import fr.rudy.newhorizon.Main;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,27 +22,26 @@ public class Chat implements Listener {
 
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
-    private final Main plugin; // Utilise le nom de ta classe principale ici
+    private final Main plugin;
     private final LuckPerms luckPerms;
 
-    public Chat(Main plugin, LuckPerms luckPerms) { // Change ici aussi
+    public Chat(Main plugin, LuckPerms luckPerms) {
         this.plugin = plugin;
         this.luckPerms = luckPerms;
 
-        // Enregistre cet écouteur auprès du serveur
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(final AsyncPlayerChatEvent event) {
-        final String message = event.getMessage();
-        final Player player = event.getPlayer();
+        event.setCancelled(true);
 
-        // Récupère les métadonnées LuckPerms pour le joueur
+        final Player player = event.getPlayer();
+        final String message = event.getMessage();
+
         final CachedMetaData metaData = this.luckPerms.getPlayerAdapter(Player.class).getMetaData(player);
         final String group = metaData.getPrimaryGroup();
 
-        // Définit le format du chat en fonction du groupe ou du format général
         String format = plugin.getConfig().getString(plugin.getConfig().getString("group-formats." + group) != null ? "group-formats." + group : "chat-format")
                 .replace("{prefix}", metaData.getPrefix() != null ? metaData.getPrefix() : "")
                 .replace("{suffix}", metaData.getSuffix() != null ? metaData.getSuffix() : "")
@@ -51,19 +53,35 @@ public class Chat implements Listener {
                 .replace("{username-color}", metaData.getMetaValue("username-color") != null ? metaData.getMetaValue("username-color") : "")
                 .replace("{message-color}", metaData.getMetaValue("message-color") != null ? metaData.getMetaValue("message-color") : "");
 
-        // Si PlaceholderAPI est activé, applique les placeholders
         format = colorize(translateHexColorCodes(plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")
                 ? PlaceholderAPI.setPlaceholders(player, format)
                 : format));
 
-        // Applique les permissions pour la gestion des couleurs et remplace le message dans le format
-        event.setFormat(format.replace("{message}", player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")
-                ? colorize(translateHexColorCodes(message))
-                : player.hasPermission("lpc.colorcodes")
-                ? colorize(message)
-                : player.hasPermission("lpc.rgbcodes")
-                ? translateHexColorCodes(message)
-                : message).replace("%", "%%"));
+        // Rendu cliquable du pseudo
+        String usernameColor = metaData.getMetaValue("username-color") != null ? metaData.getMetaValue("username-color") : "";
+        String messageColor = metaData.getMetaValue("message-color") != null ? metaData.getMetaValue("message-color") : "";
+        String prefix = metaData.getPrefix() != null ? metaData.getPrefix() : "";
+        String suffix = metaData.getSuffix() != null ? metaData.getSuffix() : "";
+
+        TextComponent nameComponent = new TextComponent(colorize(usernameColor + prefix + player.getName() + suffix));
+        nameComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/profile " + player.getName()));
+
+        TextComponent messageComponent = new TextComponent(" : " +
+                (player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")
+                        ? colorize(translateHexColorCodes(message))
+                        : player.hasPermission("lpc.colorcodes")
+                        ? colorize(message)
+                        : player.hasPermission("lpc.rgbcodes")
+                        ? translateHexColorCodes(message)
+                        : message));
+
+        nameComponent.addExtra(messageComponent);
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            online.spigot().sendMessage(nameComponent);
+        }
+
+        Bukkit.getConsoleSender().sendMessage(ChatColor.stripColor(prefix + player.getName() + suffix + ": " + message));
     }
 
     private String colorize(final String message) {

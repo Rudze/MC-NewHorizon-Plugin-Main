@@ -21,6 +21,7 @@ public class CommandVisibilityListener implements Listener {
         Set<String> tmp = new HashSet<>();
         tmp.add("wiki");
         tmp.add("discord");
+        tmp.add("profile");
         PUBLIC_CMDS = Collections.unmodifiableSet(tmp);
     }
 

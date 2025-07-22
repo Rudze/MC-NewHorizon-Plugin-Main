@@ -298,4 +298,19 @@ public class CityManager {
             return 999;
         }
     }
+
+    public String getCityNameById(int cityId) {
+        try (PreparedStatement statement = connection.prepareStatement("SELECT city_name FROM newhorizon_cities WHERE id = ?")) {
+            statement.setInt(1, cityId);
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                return result.getString("city_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Inconnue";
+    }
+
+
 }

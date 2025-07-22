@@ -1,231 +1,353 @@
+/*
+ * Decompiled with CFR 0.152.
+ *
+ * Could not load the following classes:
+ *  net.md_5.bungee.api.ChatColor
+ *  net.md_5.bungee.api.chat.BaseComponent
+ *  net.md_5.bungee.api.chat.ClickEvent
+ *  net.md_5.bungee.api.chat.ClickEvent$Action
+ *  net.md_5.bungee.api.chat.ComponentBuilder
+ *  net.md_5.bungee.api.chat.HoverEvent
+ *  net.md_5.bungee.api.chat.HoverEvent$Action
+ *  net.md_5.bungee.api.chat.TextComponent
+ *  org.bukkit.Bukkit
+ *  org.bukkit.Location
+ *  org.bukkit.command.CommandSender
+ *  org.bukkit.entity.Player
+ *  org.bukkit.plugin.Plugin
+ *  org.bukkit.scheduler.BukkitRunnable
+ */
 package fr.rudy.newhorizon.dialogue;
 
 import fr.rudy.newhorizon.Main;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class DialogueManager {
+    private static final Map<UUID, BukkitRunnable> pendingDialogs = new HashMap<UUID, BukkitRunnable>();
 
-    private static final Map<UUID, BukkitRunnable> pendingDialogs = new HashMap<>();
-
-    public static void startDialogue(Player player, String npc, String step) {
+    public static void skipDialogue(Player player) {
         UUID uuid = player.getUniqueId();
+        BukkitRunnable r = pendingDialogs.remove(uuid);
+        if (r != null) {
+            r.cancel();
+        }
+    }
 
-        if (pendingDialogs.containsKey(uuid)) {
-            cancelRunnable(uuid);
-            // Open menu immediately if a dialogue is already active for this player
-            // This is a safety measure to prevent multiple dialogues overlapping
-            openMenuImmediately(player, npc);
+    public static void startDialogue(Player player, String npc, String stepArg, boolean skip) {
+        UUID uuid = player.getUniqueId();
+        if (pendingDialogs.containsKey(uuid) && !skip) {
+            DialogueManager.cancelRunnable(uuid);
+            switch (npc.toLowerCase()) {
+                case "npc_blue": {
+                    if ("1".equals(stepArg)) {
+                        if (Main.get().getDialogueProgressManager().getPlayerDialogueStep(uuid, npc) < 2) {
+                            DialogueManager.runBlue1(player, uuid, npc);
+                            break;
+                        }
+                        DialogueManager.runBlue10(player);
+                        break;
+                    }
+                    if (!"10".equals(stepArg)) break;
+                    DialogueManager.runBlue10(player);
+                    break;
+                }
+                case "npc_alex": {
+                    if (!"1".equals(stepArg)) break;
+                    DialogueManager.runAlex(player);
+                    break;
+                }
+                case "npc_fred": {
+                    if (!"1".equals(stepArg)) break;
+                    DialogueManager.runFred(player);
+                    break;
+                }
+                case "npc_death": {
+                    if (!"1".equals(stepArg)) break;
+                    DialogueManager.runDeathMenu(player);
+                }
+            }
             return;
         }
-
-        // Dialogue for Emily
-        if (npc.equalsIgnoreCase("npc_emily") && step.equals("1")) {
-            sendFormatted(player, ":portrait_emily:");
-            sendFormatted(player, "              :speech_indicator:&f&l Emily");
-            sendFormatted(player, "              &7Bienvenue sur &b&lNewHorizon&7, ");
-            sendFormatted(player, "              &7Je suis votre guide ici.");
-            sendClickableLine(player, "menu_emily", "&7Laissez-moi vous aider ");
-            sendFormatted(player, "        ");
-
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open menu_emily " + player.getName());
-                    pendingDialogs.remove(uuid);
-                }
-            };
-            pendingDialogs.put(uuid, runnable);
-            runnable.runTaskLater(Main.get(), 70L);
-
-            startLocationTracking(player, uuid);
+        if (skip) {
+            DialogueManager.cancelRunnable(uuid);
         }
-
-        // Dialogue for Alex
-        if (npc.equalsIgnoreCase("npc_alex") && step.equals("1")) {
-            sendFormatted(player, ":portrait_alex:");
-            sendFormatted(player, "              :speech_indicator:&f&l Alex");
-            sendFormatted(player, "              &7Bienvenue au Casino de &b&lNewHorizon&7 !");
-            sendFormatted(player, "              &7En plus c'est votre jour de chance.");
-            sendFormatted(player, "              &7Une seule règle : &cpariez gros &7pour gagner plus.");
-            sendClickableLine(player, "casino_menu", "&7Que souhaitez vous faire ? ");
-            sendFormatted(player, "        ");
-
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open casino_menu " + player.getName());
-                    pendingDialogs.remove(uuid);
+        int lastStep = Main.get().getDialogueProgressManager().getPlayerDialogueStep(uuid, npc);
+        String step = stepArg;
+        switch (npc.toLowerCase()) {
+            case "npc_blue": {
+                if ("1".equals(step)) {
+                    if (skip) {
+                        DialogueManager.runBlue1(player, uuid, npc);
+                        break;
+                    }
+                    if (lastStep >= 2) {
+                        DialogueManager.startDialogue(player, npc, "10", false);
+                        break;
+                    }
+                    DialogueManager.sendFormatted(player, ":portrait_blue:");
+                    DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
+                    DialogueManager.sendFormatted(player, "              &7Bonjour et bienvenue sur &b&lNewHorizon&7,");
+                    DialogueManager.sendFormatted(player, "              &7" + player.getName() + ", pr\u00eat pour une petite");
+                    DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_blue 1 true", "&7visite guid\u00e9e ? ", "Cin\u00e9matique \u2192", "Lancer la cin\u00e9matique");
+                    DialogueManager.sendFormatted(player, "              ");
+                    DialogueManager.scheduleBlue1(player, uuid, npc);
+                    DialogueManager.startLocationTracking(player, uuid);
+                    break;
                 }
-            };
-            pendingDialogs.put(uuid, runnable);
-            runnable.runTaskLater(Main.get(), 70L);
-
-            startLocationTracking(player, uuid);
-        }
-
-        // Dialogue for Croupier
-        if (npc.equalsIgnoreCase("npc_croupier") && step.equals("1")) {
-            sendFormatted(player, ":portrait_croupier:");
-            sendFormatted(player, "              :speech_indicator:&f&l Croupier");
-            sendFormatted(player, "              &7Bienvenue à la table de &a&lBlackjack&7.");
-            sendFormatted(player, "              &7Pour participer, cliquer sur la table.");
-            sendFormatted(player, "              &7Bonne chance, et que la chance soit avec vous.");
-            sendFormatted(player, "        ");
-            // No menu for Croupier based on current code, so no runnable for menu opening
-            // But we still want to track location
-            startLocationTracking(player, uuid);
-        }
-
-        // Dialogue for Fred - NEW NPC
-        if (npc.equalsIgnoreCase("npc_fred") && step.equals("1")) {
-            sendFormatted(player, ":portrait_fred:"); // Assuming you have a portrait for Fred
-            sendFormatted(player, "              :speech_indicator:&f&l Capitaine Fred");
-            sendFormatted(player, "              &7Hey matelot ! Moi et &b&lGhaston&7 pouvons");
-            sendFormatted(player, "              &7t'emmener où tu le souhaites.");
-            sendClickableLine(player, "navigation_build", "&7Je te dépose où ? "); // New menu for travel
-            sendFormatted(player, "        ");
-
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open navigation_build " + player.getName());
-                    pendingDialogs.remove(uuid);
+                if ("2".equals(step)) {
+                    DialogueManager.sendFormatted(player, ":portrait_blue:");
+                    DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
+                    DialogueManager.sendFormatted(player, "              &7Pour commencer, voici le capitaine &b&lFred");
+                    DialogueManager.sendFormatted(player, "              &7accompagn\u00e9 de &b&lGhaston&7. Ils te permettront");
+                    DialogueManager.sendFormatted(player, "              &7de voyager entre les r\u00e9gions de NewHorizon.");
+                    DialogueManager.sendFormatted(player, "              ");
+                    break;
                 }
-            };
-            pendingDialogs.put(uuid, runnable);
-            runnable.runTaskLater(Main.get(), 70L);
-
-            startLocationTracking(player, uuid);
+                if (!"10".equals(step)) break;
+                if (skip) {
+                    DialogueManager.runBlue10(player);
+                    break;
+                }
+                DialogueManager.sendFormatted(player, ":portrait_blue:");
+                DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
+                DialogueManager.sendFormatted(player, "              &7Bienvenue sur &b&lNewHorizon&7,");
+                DialogueManager.sendFormatted(player, "              &7je suis votre guide ici.");
+                DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_blue 10 true", "&7Laissez-moi vous aider ", "Menu \u2192", "Ouvrir le menu");
+                DialogueManager.sendFormatted(player, "              ");
+                DialogueManager.scheduleBlue10(player);
+                DialogueManager.startLocationTracking(player, uuid);
+                break;
+            }
+            case "npc_alex": {
+                if (!"1".equals(step)) break;
+                if (skip) {
+                    DialogueManager.runAlex(player);
+                    break;
+                }
+                DialogueManager.sendFormatted(player, ":portrait_alex:");
+                DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Alex");
+                DialogueManager.sendFormatted(player, "              &7Bienvenue au Casino de &b&lNewHorizon&7 !");
+                DialogueManager.sendFormatted(player, "              &7En plus c'est votre jour de chance.");
+                DialogueManager.sendFormatted(player, "              &7Et surtout pariez gros pour gagner plus.");
+                DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_alex 1 true", "&7Que souhaitez vous faire ? ", "Menu \u2192", "Ouvrir le menu");
+                DialogueManager.scheduleAlex(player);
+                DialogueManager.startLocationTracking(player, uuid);
+                break;
+            }
+            case "npc_fred": {
+                if (!"1".equals(step)) break;
+                if (skip) {
+                    DialogueManager.runFred(player);
+                    break;
+                }
+                DialogueManager.sendFormatted(player, ":portrait_fred:");
+                DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Capitaine Fred");
+                DialogueManager.sendFormatted(player, "              &7Hey matelot ! Moi et &b&lGhaston&7");
+                DialogueManager.sendFormatted(player, "              &7pouvons t'emmener o\u00f9 tu le souhaites.");
+                DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_fred 1 true", "&7Je te d\u00e9pose o\u00f9 ? ", "Menu \u2192", "Ouvrir le menu");
+                DialogueManager.sendFormatted(player, "              ");
+                DialogueManager.scheduleFred(player);
+                DialogueManager.startLocationTracking(player, uuid);
+                break;
+            }
+            case "npc_death": {
+                if (!"1".equals(step)) break;
+                if (skip) {
+                    DialogueManager.runDeathMenu(player);
+                    break;
+                }
+                DialogueManager.sendFormatted(player, ":portrait_death:");
+                DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l La faucheuse");
+                DialogueManager.sendFormatted(player, "              &7Te revoil\u00e0 parmis les vivants");
+                DialogueManager.sendFormatted(player, "              &7Contre quelques pi\u00e8ces d'or,");
+                DialogueManager.sendFormatted(player, "              &7je peux te ramener \u00e0 ta derni\u00e8re mort.");
+                DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_death 1 true", "&7Que choisis-tu ? ", "Menu \u2192", "Ouvrir le menu de r\u00e9surrection");
+                DialogueManager.scheduleDeathMenu(player);
+                DialogueManager.startLocationTracking(player, uuid);
+                break;
+            }
+            case "npc_croupier": {
+                if (!"1".equals(step)) break;
+                DialogueManager.sendFormatted(player, ":portrait_croupier:");
+                DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Croupier");
+                DialogueManager.sendFormatted(player, "              &7Bienvenue \u00e0 la table de &a&lBlackjack&7.");
+                DialogueManager.sendFormatted(player, "              &7Pour participer, cliquer sur la table.");
+                DialogueManager.sendFormatted(player, "              &7Bonne chance, et que la chance soit");
+                DialogueManager.sendFormatted(player, "              &7avec vous.");
+            }
         }
     }
 
-    /**
-     * Cancels any pending dialogue for a given player UUID.
-     * @param uuid The UUID of the player.
-     */
+    private static void runBlue1(Player player, UUID uuid, String npc) {
+        player.performCommand("cinematic play npc_blue_1 " + player.getName());
+        Bukkit.getScheduler().runTask((Plugin)Main.get(), () -> Main.get().getDialogueProgressManager().setPlayerDialogueStep(uuid, npc, 2));
+    }
+
+    private static void scheduleBlue1(final Player player, final UUID uuid, final String npc) {
+        BukkitRunnable r = new BukkitRunnable(){
+
+            public void run() {
+                if (pendingDialogs.containsKey(uuid)) {
+                    DialogueManager.runBlue1(player, uuid, npc);
+                    pendingDialogs.remove(uuid);
+                }
+            }
+        };
+        pendingDialogs.put(uuid, r);
+        r.runTaskLater((Plugin)Main.get(), 70L);
+    }
+
+    private static void runDeathMenu(Player player) {
+        Bukkit.dispatchCommand((CommandSender)Bukkit.getConsoleSender(), (String)("dmenu open death " + player.getName()));
+    }
+
+    private static void scheduleDeathMenu(final Player player) {
+        final UUID uuid = player.getUniqueId();
+        BukkitRunnable r = new BukkitRunnable(){
+
+            public void run() {
+                if (pendingDialogs.containsKey(uuid)) {
+                    DialogueManager.runDeathMenu(player);
+                    pendingDialogs.remove(uuid);
+                }
+            }
+        };
+        pendingDialogs.put(uuid, r);
+        r.runTaskLater((Plugin)Main.get(), 70L);
+    }
+
+    private static void runBlue10(Player player) {
+        Bukkit.dispatchCommand((CommandSender)Bukkit.getConsoleSender(), (String)("dmenu open menu_blue " + player.getName()));
+    }
+
+    private static void scheduleBlue10(final Player player) {
+        BukkitRunnable r = new BukkitRunnable(){
+
+            public void run() {
+                if (pendingDialogs.containsKey(player.getUniqueId())) {
+                    DialogueManager.runBlue10(player);
+                    pendingDialogs.remove(player.getUniqueId());
+                }
+            }
+        };
+        pendingDialogs.put(player.getUniqueId(), r);
+        r.runTaskLater((Plugin)Main.get(), 70L);
+    }
+
+    private static void runAlex(Player player) {
+        Bukkit.dispatchCommand((CommandSender)Bukkit.getConsoleSender(), (String)("dmenu open casino_menu " + player.getName()));
+    }
+
+    private static void scheduleAlex(final Player player) {
+        BukkitRunnable r = new BukkitRunnable(){
+
+            public void run() {
+                if (pendingDialogs.containsKey(player.getUniqueId())) {
+                    DialogueManager.runAlex(player);
+                    pendingDialogs.remove(player.getUniqueId());
+                }
+            }
+        };
+        pendingDialogs.put(player.getUniqueId(), r);
+        r.runTaskLater((Plugin)Main.get(), 70L);
+    }
+
+    private static void runFred(Player player) {
+        Bukkit.dispatchCommand((CommandSender)Bukkit.getConsoleSender(), (String)("dmenu open navigation_build " + player.getName()));
+    }
+
+    private static void scheduleFred(final Player player) {
+        BukkitRunnable r = new BukkitRunnable(){
+
+            public void run() {
+                if (pendingDialogs.containsKey(player.getUniqueId())) {
+                    DialogueManager.runFred(player);
+                    pendingDialogs.remove(player.getUniqueId());
+                }
+            }
+        };
+        pendingDialogs.put(player.getUniqueId(), r);
+        r.runTaskLater((Plugin)Main.get(), 70L);
+    }
+
     private static void cancelRunnable(UUID uuid) {
         BukkitRunnable r = pendingDialogs.remove(uuid);
-        if (r != null) r.cancel();
-    }
-
-    /**
-     * Opens a specific dialogue menu for a player immediately.
-     * @param player The player to open the menu for.
-     * @param npc The NPC associated with the dialogue.
-     */
-    private static void openMenuImmediately(Player player, String npc) {
-        String menuName = null;
-        if (npc.equalsIgnoreCase("npc_emily")) {
-            menuName = "menu_emily";
-        } else if (npc.equalsIgnoreCase("npc_alex")) {
-            menuName = "casino_menu";
-        } else if (npc.equalsIgnoreCase("npc_fred")) {
-            menuName = "travel_menu"; // Corresponding menu for Fred
-        }
-
-        if (menuName != null) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dmenu open " + menuName + " " + player.getName());
+        if (r != null) {
+            try {
+                r.cancel();
+            }
+            catch (IllegalStateException illegalStateException) {
+                // empty catch block
+            }
         }
     }
 
-    /**
-     * Sends a formatted message to the player, applying custom hex colors and Bukkit color codes.
-     * @param player The player to send the message to.
-     * @param message The message string to format and send.
-     */
     private static void sendFormatted(Player player, String message) {
-        player.sendMessage(applyHexColor(message));
+        player.sendMessage(DialogueManager.applyHexColor(message));
     }
 
-    /**
-     * Applies custom hex color codes (e.g., <#RRGGBB>) and standard Bukkit color codes (&) to a message string.
-     * @param message The message string to apply colors to.
-     * @return The formatted message string.
-     */
     private static String applyHexColor(String message) {
+        message = ChatColor.translateAlternateColorCodes((char)'&', (String)message);
         StringBuilder builder = new StringBuilder();
-        char[] chars = message.toCharArray();
-
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '<' && i + 7 < chars.length && chars[i + 1] == '#' && chars[i + 8] == '>') {
-                // Handle hex color codes <#RRGGBB>
+        char[] cs = message.toCharArray();
+        for (int i = 0; i < cs.length; ++i) {
+            if (cs[i] == '<' && i + 7 < cs.length && cs[i + 1] == '#' && cs[i + 8] == '>') {
                 String hex = message.substring(i + 1, i + 8);
                 try {
-                    builder.append(ChatColor.of(hex));
-                } catch (IllegalArgumentException e) {
-                    // Fallback if hex color is invalid, append as is
-                    builder.append(chars[i]);
+                    builder.append(ChatColor.of((String)hex));
+                }
+                catch (IllegalArgumentException e) {
+                    builder.append(cs[i]);
                 }
                 i += 8;
-            } else if (chars[i] == '&' && i + 1 < chars.length) {
-                // Handle standard Bukkit color codes &X
-                builder.append(ChatColor.translateAlternateColorCodes('&', "&" + chars[i + 1]));
-                i++;
-            } else {
-                builder.append(chars[i]);
+                continue;
             }
+            builder.append(cs[i]);
         }
         return builder.toString();
     }
 
-    /**
-     * Sends a line of text to the player with a clickable button that opens a dialogue menu.
-     * @param player The player to send the message to.
-     * @param menuName The name of the menu to open when the button is clicked.
-     * @param messageBeforeButton The message to display before the clickable button.
-     */
-    private static void sendClickableLine(Player player, String menuName, String messageBeforeButton) {
-        TextComponent fullLine = new TextComponent("              " + applyHexColor(messageBeforeButton));
-        TextComponent menuPart = new TextComponent("Menu →");
-
-        // Set color and bold for the clickable part, matching existing theme
-        menuPart.setColor(ChatColor.of("#ffacd5"));
-        menuPart.setBold(true);
-        // Set click event to run a command to open the specified menu
-        menuPart.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dmenu open " + menuName + " " + player.getName()));
-        // Set hover event to show a tooltip when hovering over the button
-        menuPart.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("Ouvrir le menu").color(ChatColor.of("#ffacd5")).create()));
-
-        fullLine.addExtra(menuPart); // Add the clickable part to the full line
-        player.spigot().sendMessage(fullLine); // Send the message to the player
+    private static void sendClickableLine(Player player, String command, String before, String label, String hover) {
+        TextComponent line = new TextComponent(DialogueManager.applyHexColor("              " + before));
+        TextComponent button = new TextComponent(label);
+        button.setColor(ChatColor.of((String)"#ffacd5"));
+        button.setBold(Boolean.valueOf(true));
+        button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command));
+        button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(DialogueManager.applyHexColor("&f" + hover)).create()));
+        line.addExtra((BaseComponent)button);
+        player.spigot().sendMessage((BaseComponent)line);
     }
 
-    /**
-     * Starts a repeating task to track the player's location and cancel dialogue if they move too far.
-     * @param player The player to track.
-     * @param uuid The UUID of the player.
-     */
-    private static void startLocationTracking(Player player, UUID uuid) {
-        Location startLoc = player.getLocation().clone();
-        new BukkitRunnable() {
-            @Override
+    private static void startLocationTracking(final Player player, final UUID uuid) {
+        final Location start = player.getLocation().clone();
+        new BukkitRunnable(){
+
             public void run() {
-                // Cancel if player is offline or dialogue is no longer pending
                 if (!player.isOnline() || !pendingDialogs.containsKey(uuid)) {
-                    cancel();
+                    this.cancel();
                     return;
                 }
-
-                // If player moves more than 4 blocks, cancel dialogue
-                if (player.getLocation().distanceSquared(startLoc) > 4) {
-                    player.sendMessage("§f\uE01D§c Dialogue annulé, vous vous êtes éloigné.");
-                    cancelRunnable(uuid);
-                    cancel();
+                if (player.getLocation().distanceSquared(start) > 9.0) {
+                    player.sendMessage(DialogueManager.applyHexColor("&cDialogue annul\u00e9, vous vous \u00eates trop \u00e9loign\u00e9."));
+                    DialogueManager.cancelRunnable(uuid);
+                    this.cancel();
                 }
             }
-        }.runTaskTimer(Main.get(), 0L, 5L); // Check every 5 ticks (0.25 seconds)
+        }.runTaskTimer((Plugin)Main.get(), 0L, 10L);
     }
 }
+

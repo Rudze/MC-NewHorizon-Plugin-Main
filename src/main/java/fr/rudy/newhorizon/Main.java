@@ -6,6 +6,7 @@ import fr.rudy.newhorizon.city.*;
 import fr.rudy.newhorizon.commands.*;
 import fr.rudy.newhorizon.core.PlayerConnectionListener;
 import fr.rudy.newhorizon.core.PlayerDisconnectListener;
+import fr.rudy.newhorizon.dialogue.DialogueProgressManager;
 import fr.rudy.newhorizon.economy.EconomyManager;
 import fr.rudy.newhorizon.economy.VaultEconomy;
 import fr.rudy.newhorizon.events.Events;
@@ -29,10 +30,8 @@ import fr.rudy.newhorizon.stats.PlayerSessionListener;
 import fr.rudy.newhorizon.stats.SessionStatManager;
 import fr.rudy.newhorizon.stats.StatsGUIListener;
 import fr.rudy.newhorizon.teleport.TPModule;
-import fr.rudy.newhorizon.ui.CityGUIListener;
-import fr.rudy.newhorizon.ui.MenuItemManager;
-import fr.rudy.newhorizon.ui.NameTagListener;
-import fr.rudy.newhorizon.ui.TablistManager;
+import fr.rudy.newhorizon.ui.*;
+import fr.rudy.newhorizon.ui.BossBarManager;
 import fr.rudy.newhorizon.utils.DiscordJoinNotifier;
 import fr.rudy.newhorizon.utils.ScheduledTaskManager;
 import fr.rudy.newhorizon.warp.WarpManager;
@@ -82,6 +81,8 @@ public final class Main extends JavaPlugin implements Listener {
     private PartyManager partyManager;
     private Economy economy;
     private PartyMenu partyMenu;
+    private DialogueProgressManager dialogueProgressManager;
+
 
     private String prefixError;
     private String prefixInfo;
@@ -150,6 +151,8 @@ public final class Main extends JavaPlugin implements Listener {
             tablistManager = new TablistManager(this);
             tablistManager.start();
         }
+
+        dialogueProgressManager = new DialogueProgressManager(getDatabase());
 
         CommandTabCompleter tabCompleter = new CommandTabCompleter();
 
@@ -297,6 +300,9 @@ public final class Main extends JavaPlugin implements Listener {
 
         profileManager.register();
 
+        new BossBarManager(this);
+
+
         new EggBlockListener(this, eggIncubationManager);
         new EggBlockBreakListener(this, eggIncubationManager);
 
@@ -438,5 +444,10 @@ public final class Main extends JavaPlugin implements Listener {
     public PartyMenu getPartyMenu() {
         return partyMenu;
     }
+
+    public DialogueProgressManager getDialogueProgressManager() {
+        return dialogueProgressManager;
+    }
+
 
 }

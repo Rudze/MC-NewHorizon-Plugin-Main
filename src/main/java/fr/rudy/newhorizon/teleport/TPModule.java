@@ -80,21 +80,3 @@ public class TPModule {
         return toggleState.getOrDefault(player.getUniqueId(), true);
     }
 }
-
-class TPRequest {
-    private final UUID senderId;
-    private final UUID targetId;
-
-    public TPRequest(UUID senderId, UUID targetId) {
-        this.senderId = senderId;
-        this.targetId = targetId;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public UUID getTargetId() {
-        return targetId;
-    }
-}

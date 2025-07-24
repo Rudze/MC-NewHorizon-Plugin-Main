@@ -99,7 +99,7 @@ public class DialogueManager {
                         break;
                     }
                     DialogueManager.sendFormatted(player, ":portrait_blue:");
-                    DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
+                    DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l ?");
                     DialogueManager.sendFormatted(player, "              &7Bonjour et bienvenue sur &b&lNewHorizon&7,");
                     DialogueManager.sendFormatted(player, "              &7" + player.getName() + ", pr\u00eat pour une petite");
                     DialogueManager.sendClickableLine(player, "dialogue " + player.getName() + " npc_blue 1 true", "&7visite guid\u00e9e ? ", "Cin\u00e9matique \u2192", "Lancer la cin\u00e9matique");
@@ -111,9 +111,18 @@ public class DialogueManager {
                 if ("2".equals(step)) {
                     DialogueManager.sendFormatted(player, ":portrait_blue:");
                     DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
-                    DialogueManager.sendFormatted(player, "              &7Pour commencer, voici le capitaine &b&lFred");
-                    DialogueManager.sendFormatted(player, "              &7accompagn\u00e9 de &b&lGhaston&7. Ils te permettront");
-                    DialogueManager.sendFormatted(player, "              &7de voyager entre les r\u00e9gions de NewHorizon.");
+                    DialogueManager.sendFormatted(player, "              &7Pour commencer, je suis &b&lBlue");
+                    DialogueManager.sendFormatted(player, "              &7Je suis là pour t'accompagner sur");
+                    DialogueManager.sendFormatted(player, "              &b&lNewHorizon&f !");
+                    DialogueManager.sendFormatted(player, "              ");
+                    break;
+                }
+                if ("3".equals(step)) {
+                    DialogueManager.sendFormatted(player, ":portrait_blue:");
+                    DialogueManager.sendFormatted(player, "              :speech_indicator:&f&l Blue");
+                    DialogueManager.sendFormatted(player, "              &7Je te présente le capitaine &b&lFred");
+                    DialogueManager.sendFormatted(player, "              &7accompagné de &b&lGhaston&7. Ils te permettront");
+                    DialogueManager.sendFormatted(player, "              &7de voyager entre les régions de NewHorizon.");
                     DialogueManager.sendFormatted(player, "              ");
                     break;
                 }
@@ -193,7 +202,7 @@ public class DialogueManager {
     }
 
     private static void runBlue1(Player player, UUID uuid, String npc) {
-        player.performCommand("cinematic play npc_blue_1 " + player.getName());
+        player.performCommand("tw cinematic start first_join " + player.getName());
         Bukkit.getScheduler().runTask((Plugin)Main.get(), () -> Main.get().getDialogueProgressManager().setPlayerDialogueStep(uuid, npc, 2));
     }
 

@@ -1,5 +1,6 @@
 package fr.rudy.newhorizon;
 
+import fr.rudy.newhorizon.admin.FreezeCommand;
 import fr.rudy.newhorizon.archaeology.*;
 import fr.rudy.newhorizon.chat.*;
 import fr.rudy.newhorizon.city.*;
@@ -185,6 +186,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("friend").setExecutor(new FriendCommand(friendManager));
         getCommand("party").setExecutor(new PartyCommand(partyManager, partyMenu));
         getCommand("profile").setExecutor(new ProfileCommand());
+        getCommand("freeze").setExecutor(new FreezeCommand(this));
 
         // Préfixes
         prefixError = getConfig().getString("general.prefixError", "&c[Erreur] ");
@@ -295,7 +297,6 @@ public final class Main extends JavaPlugin implements Listener {
         partyManager = new PartyManager(this);
         partyMenu = new PartyMenu(partyManager);
         profileManager = new ProfileManager();
-
 
 
         profileManager.register();
@@ -448,6 +449,8 @@ public final class Main extends JavaPlugin implements Listener {
     public DialogueProgressManager getDialogueProgressManager() {
         return dialogueProgressManager;
     }
+
+
 
 
 }
